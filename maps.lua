@@ -1,7 +1,7 @@
 --This file contains a list of simple custom maps
 --These are to replace the old custom map model, and for optimisation
-vcnlib.maps = {}
-local maps = vcnlib.maps
+planetoids.maps = {}
+local maps = planetoids.maps
 
 --Height Maps
 local get_height = function(pos)
@@ -74,7 +74,7 @@ maps.centred_distance = {
 		self.dimensions = def.dimensions
 		self.geometry = def.geometry
 		self.centre = def.centre or {x=0,y=0,z=0}
-		self.get_dist = vcnlib.get_distance_function(self.geometry
+		self.get_dist = planetoids.get_distance_function(self.geometry
 			,self.dimensions)
 	end,
 }
@@ -91,7 +91,7 @@ maps.scaled_centred_distance = {
 		self.geometry = def.geometry
 		self.centre = def.centre or {x=0,y=0,z=0}
 		self.scale = def.scale
-		self.get_dist = vcnlib.get_distance_function(self.geometry
+		self.get_dist = planetoids.get_distance_function(self.geometry
 			,self.dimensions)
 	end,
 }
@@ -111,15 +111,15 @@ local get_map_object = function(map_def)
 	return object
 end
 
-vcnlib.get_map_object = get_map_object
+planetoids.get_map_object = get_map_object
 
 local register_map = function(map_def)
-	if not vcnlib.maps[map_def.name]
+	if not planetoids.maps[map_def.name]
 	and map_def.get3d
 	and map_def.get2d
 	and map_def.construct then
-		vcnlib.maps[map_def.name] = map_def
+		planetoids.maps[map_def.name] = map_def
 	end
 end
 
-vcnlib.register_map = register_map
+planetoids.register_map = register_map

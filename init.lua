@@ -1,5 +1,5 @@
-vcnlib = {}
-vcnlib.layers = {}
+planetoids = {}
+planetoids.layers = {}
 
 --Layer def
 --	name
@@ -50,8 +50,8 @@ local abs = math.abs
 local floor = math.floor
 local hash_pos = minetest.hash_node_position
 
-dofile(minetest.get_modpath("vcnlib").."/distance.lua")
-dofile(minetest.get_modpath("vcnlib").."/maps.lua")
+dofile(minetest.get_modpath("planetoids").."/distance.lua")
+dofile(minetest.get_modpath("planetoids").."/maps.lua")
 
 --normal vector.add has a check for b not being a table, I don't need this
 local vector_add = function(a,b)
@@ -81,7 +81,7 @@ local sector_to_pos = function(sector,layer)
 end
 
 --add function to api
-vcnlib.sector_to_pos = sector_to_pos
+planetoids.sector_to_pos = sector_to_pos
 
 --point 0,0,0 is in sector 0,0,0
 local pos_to_sector = function(pos,layer)
@@ -97,7 +97,7 @@ local pos_to_sector = function(pos,layer)
 	return sector
 end
 
-vcnlib.pos_to_sector = pos_to_sector 
+planetoids.pos_to_sector = pos_to_sector 
 
 --This is hot code, so checks are kept out of the looping sections
 --so there is a lot of code duplication
@@ -482,7 +482,7 @@ local get_biome_map_3d_experimental = function(minp,maxp,layer,seed,byot)
 	return map
 end
 
-vcnlib.experimental_3d = get_biome_map_3d_experimental
+planetoids.experimental_3d = get_biome_map_3d_experimental
 
 local get_biome_map_2d_experimental = function(minp,maxp,layer,seed,byot)
 	local blsize = layer.blocksize or {x=5,y=0,z=5}
@@ -522,7 +522,7 @@ local get_biome_map_2d_experimental = function(minp,maxp,layer,seed,byot)
 	return map
 end
 
-vcnlib.experimental_2d = get_biome_map_2d_experimental
+planetoids.experimental_2d = get_biome_map_2d_experimental
 	
 local function init_maps(layer)
 	--Setup layer maps if there are any
@@ -539,7 +539,7 @@ local function init_maps(layer)
 			biome_map.dimensions = def_table.dimensions or 2
 			biome_map.perlin = minetest.get_perlin(def_table)
 		else
-			biome_map = vcnlib.get_map_object(def_table)
+			biome_map = planetoids.get_map_object(def_table)
 		end
 		--Replace def_table with map object
 		layer.biome_maps[map_index] = biome_map
@@ -596,7 +596,7 @@ local get_node_biome = function(pos,seed,layer)
 	return find_closest(pos,points,layer.get_dist_fast)
 end
 
-vcnlib.get_node_biome = get_node_biome
+planetoids.get_node_biome = get_node_biome
 
 --Simple biome map implimentation
 --requires scaling to perform usably well
@@ -622,7 +622,7 @@ local get_biome_map_3d_flat = function(minp,maxp,layer,seed,byot)
 	return ret
 end
 
-vcnlib.get_biome_map_3d_simple = get_biome_map_3d_flat
+planetoids.get_biome_map_3d_simple = get_biome_map_3d_flat
 
 --Simple 2d biome map implimentation
 --Functions usably without scaling - have not tested against the experimental
@@ -640,7 +640,7 @@ local get_biome_map_2d_flat = function(minp,maxp,layer,seed,byot)
 	return ret
 end
 
-vcnlib.get_biome_map_2d_simple = get_biome_map_2d_flat
+planetoids.get_biome_map_2d_simple = get_biome_map_2d_flat
 
 --This function can be used to scale any compliant 2d map generator
 --This adds an extra overhead - but this is negligable
@@ -768,7 +768,7 @@ local shared_scale_byot = {}
 --for any layer type
 --Attempts to choose the most optimal type for a given layer
 --All scale code is condtional, so is safe to add to any mapgen
-vcnlib.get_biome_map_flat = function(minp,maxp,layer,seed,byot)
+planetoids.get_biome_map_flat = function(minp,maxp,layer,seed,byot)
 	local scale_byot = nil
 	if byot then
 		scale_byot = shared_scale_byot
@@ -799,14 +799,14 @@ vcnlib.get_biome_map_flat = function(minp,maxp,layer,seed,byot)
 	end
 end
 
-vcnlib.new_layer = function(def)
+planetoids.new_layer = function(def)
 	local name = def.name
-	if vcnlib.layers[name] then
+	if planetoids.layers[name] then
 		return
 	end
 	--Register layer into global table
-	vcnlib.layers[name] = def
-	local layer = vcnlib.layers[name]
+	planetoids.layers[name] = def
+	local layer = planetoids.layers[name]
 
 	--Default seed offset, to avoid errors layer where it is required
 	layer.seed_offset = layer.seed_offset or 0
@@ -826,7 +826,7 @@ vcnlib.new_layer = function(def)
 		self.biome_number = self.biome_number + 1
 	end
 	--setup geometry function
-	layer.dist = vcnlib.geometry[layer.geometry]
+	layer.dist = planetoids.geometry[layer.geometry]
 	if layer.dimensions == 3 then
 		layer.get_dist = layer.dist._3d
 		layer.get_dist_fast = layer.dist._3d_fast or layer.get_dist
@@ -843,18 +843,18 @@ vcnlib.new_layer = function(def)
 	end
 
 	--setup layer cache to chache generated points
-	layer.cache = setmetatable({},vcnlib.meta_cache)
+	layer.cache = setmetatable({},planetoids.meta_cache)
 	return layer
 end
 
 --for mods which are using a pre-defined biome layer
-vcnlib.get_layer = function(to_get)
-	return vcnlib.layers[to_get]
+planetoids.get_layer = function(to_get)
+	return planetoids.layers[to_get]
 end
 
-vcnlib.meta_cache = {
+planetoids.meta_cache = {
 	__mode = "v",
 }
 
---dofile(minetest.get_modpath("vcnlib").."/testtools.lua")
---dofile(minetest.get_modpath("vcnlib").."/test_layer.lua")
+--dofile(minetest.get_modpath("planetoids").."/testtools.lua")
+--dofile(minetest.get_modpath("planetoids").."/test_layer.lua")

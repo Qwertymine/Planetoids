@@ -1,6 +1,6 @@
-vcnlib.geometry = {}
+planetoids.geometry = {}
 
-local geo = vcnlib.geometry
+local geo = planetoids.geometry
 
 local abs = math.abs
 local floor = math.floor
@@ -117,4 +117,4 @@ local get_distance_function = function (geometry, dimensions)
 	end
 end
 
-vcnlib.get_distance_function = get_distance_function
+planetoids.get_distance_function = get_distance_function
