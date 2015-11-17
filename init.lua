@@ -68,15 +68,9 @@ end
 local sector_to_pos = function(sector,layer)
 	local lengths = layer.sector_lengths
 	local pos = {}
-	if layer.dimensions == 3 then
-		pos.x = lengths.x * sector.x
-		pos.y = lengths.y * sector.y
-		pos.z = lengths.z * sector.z
-	else
-		pos.x = lengths.x * sector.x
-		pos.y = 0
-		pos.z = lengths.z * sector.z
-	end
+	pos.x = lengths.x * sector.x
+	pos.y = lengths.y * sector.y
+	pos.z = lengths.z * sector.z
 	return pos
 end
 
@@ -87,13 +81,9 @@ planetoids.sector_to_pos = sector_to_pos
 local pos_to_sector = function(pos,layer)
 	local lengths = layer.sector_lengths
 	local sector = {x=pos.x,y=pos.y,z=pos.z}
-		sector.x = floor(sector.x/lengths.x)
-		sector.z = floor(sector.z/lengths.z)
-	if layer.dimensions == 3 then
-		sector.y = floor(sector.y/lengths.y)
-	else
-		sector.y = 0
-	end
+	sector.x = floor(sector.x/lengths.x)
+	sector.z = floor(sector.z/lengths.z)
+	sector.y = floor(sector.y/lengths.y)
 	return sector
 end
 
@@ -140,25 +130,6 @@ local blockfiller = function(blockdata,blocksize,table,tablesize,blockstart)
 	end
 end
 
---block locations must start at (0,0,0)
-local blockfiller_2d = function(blockdata,blocksize,table,tablesize,blockstart)
-	local tableit = blockstart 
-	local zbuf = tablesize.x - blocksize.x
-	local x,z = 1,1
-	local blocklength = blocksize.x*blocksize.z
-	for i=1,blocklength do
-		if x > blocksize.x then
-			x = 1
-			z = z + 1
-			tableit = tableit + zbuf
-		end
-		table[tableit] = blockdata[i]
-		tableit = tableit + 1
-		x = x + 1
-	end
-end
-
-
 --Uses PcgRandom for better range - a 32 bit random would limit sector sizes to
 -- 600^3 due to randomness issues
 local generate_points = function(sector,seed,layer)
@@ -191,12 +162,7 @@ local generate_points = function(sector,seed,layer)
 		--This used to be to 1 block, but having multiple points at
 		--the same distance was causing artifacts with the experimental gen
 		local x = prand:next(0,(layer.sector_lengths.x-1)*10)
-		local y
-		if layer.dimensions == 3 then
-			y = prand:next(0,(layer.sector_lengths.y-1)*10)
-		else
-			y = 0
-		end
+		local y = prand:next(0,(layer.sector_lengths.y-1)*10)
 		local z = prand:next(0,(layer.sector_lengths.z-1)*10)
 		local pos = {x=x/10,y=y/10,z=z/10}
 		local hashed = hash_pos(pos)
@@ -311,49 +277,32 @@ local generate_block = function(blocksize,blockcentre,blockmin,layer,seed,byot)
 	local points = {}
 	local block = byot or {}
 	local index = 1
-	local dims = layer.dimensions
 	local geo = layer.geometry
 	local blockmax = {x=blockmin.x+(blocksize.x-1),y=blockmin.y+(blocksize.y -1)
 		,z=blockmin.z+(blocksize.z-1)}
 	local sector = pos_to_sector(blockcentre,layer)
 	local get_dist = layer.get_dist
-	if dims == 3 then
-		local x,y,z = -1,-1,-1
-		for i=1,27 do
-			if x > 1 then
-				x = -1
-				y = y + 1
-			end
-			if y > 1 then
-				y = -1
-				z = z + 1
-			end
-			local temp = generate_biomed_points(vector_add(sector,{x=x,y=y,z=z})
-				,seed,layer)
-			for i,v in ipairs(temp) do
-				points[index] = v
-				v.dist = get_dist(blockcentre,v.pos)
-				index = index + 1
-			end
-			x = x + 1
+	-- points in moore raduis
+	local x,y,z = -1,-1,-1
+	for i=1,27 do
+		if x > 1 then
+			x = -1
+			y = y + 1
 		end
-	else
-		local x,z = -1,-1
-		for i=1,9 do
-			if x > 1 then
-				x = -1
-				z = z + 1
-			end
-			local temp = generate_biomed_points(vector_add(sector,{x=x,y=0,z=z})
-				,seed,layer)
-			for i,v in ipairs(temp) do
-				points[index] = v
-				v.dist = get_dist(blockcentre,v.pos)
-				index = index + 1
-			end
-			x = x + 1
+		if y > 1 then
+			y = -1
+			z = z + 1
 		end
+		local temp = generate_biomed_points(vector_add(sector,{x=x,y=y,z=z})
+			,seed,layer)
+		for i,v in ipairs(temp) do
+			points[index] = v
+			v.dist = get_dist(blockcentre,v.pos)
+			index = index + 1
+		end
+		x = x + 1
 	end
+	
 	table.sort(points,function(a,b) return a.dist < b.dist end) 
 	local to_nil = false
 	local max_dist = points[1].dist + get_dist(blockmin,blockcentre)
@@ -367,36 +316,22 @@ local generate_block = function(blocksize,blockcentre,blockmin,layer,seed,byot)
 	--Switch to fast distance type when doing comparison only calcs
 	get_dist = layer.get_dist_fast
 	if #points == 1 then
-		if dims == 3 then
-			local tablesize = blocksize.x*blocksize.y*blocksize.z
-			local x,y,z = blockmin.x,blockmin.y,blockmin.z
-			local biome = point[1].biome
-			for i = 1,tablesize do
-				if x > blockmax.x then
-					x = blockmin.x
-					y = y + 1
-				end
-				if y > blockmax.y then
-					y = blockmin.y
-					z = z + 1
-				end
-				block[i] = biome
-				x = x + 1
+		local tablesize = blocksize.x*blocksize.y*blocksize.z
+		local x,y,z = blockmin.x,blockmin.y,blockmin.z
+		local biome = point[1].biome
+		for i = 1,tablesize do
+			if x > blockmax.x then
+				x = blockmin.x
+				y = y + 1
 			end
-		else
-			local tablesize = blocksize.x*blocksize.z
-			local x,y = blockmin.x,blockmin.z
-			local biome = point[1].biome
-			for i = 1,tablesize do
-				if x> blockmax.x then
-					x = blockmin.x
-					y = y + 1
-				end
-				block[i] = biome
-				x = x + 1
+			if y > blockmax.y then
+				y = blockmin.y
+				z = z + 1
 			end
+			block[i] = biome
+			x = x + 1
 		end
-	elseif dims == 3 then
+	else
 		local tablesize = blocksize.x*blocksize.y*blocksize.z
 		local x,y,z = blockmin.x,blockmin.y,blockmin.z
 		for i = 1,tablesize do
@@ -407,18 +342,6 @@ local generate_block = function(blocksize,blockcentre,blockmin,layer,seed,byot)
 			if y > blockmax.y then
 				y = blockmin.y
 				z = z + 1
-			end
-			block[i] = find_closest({x=x,y=y,z=z}
-				,points,get_dist)
-			x = x + 1
-		end
-	else
-		local tablesize = blocksize.x*blocksize.z
-		local x,y = blockmin.x,blockmin.z
-		for i = 1,tablesize do
-			if x> blockmax.x then
-				x = blockmin.x
-				y = y + 1
 			end
 			block[i] = find_closest({x=x,y=y,z=z}
 				,points,get_dist)
@@ -484,46 +407,6 @@ end
 
 planetoids.experimental_3d = get_biome_map_3d_experimental
 
-local get_biome_map_2d_experimental = function(minp,maxp,layer,seed,byot)
-	local blsize = layer.blocksize or {x=5,y=0,z=5}
-	local halfsize = {x=blsize.x/2,y=0,z=blsize.z/2}
-	local centre = {x=minp.x+halfsize.x,y=0,z=minp.z+halfsize.z}
-	local blocksize = {x=blsize.x,y=0,z=blsize.z}
-	local blockmin = {x=minp.x,y=0,z=minp.z}
-	local mapsize = {x=maxp.x-minp.x+1,y=0,z=maxp.z-minp.z+1}
-	local map = byot or {}
-	local block_byot
-	if byot then
-		block_byot = shared_block_byot
-	end
-
-	for z=minp.z,maxp.z,blsize.z do
-		centre.z = z + halfsize.z
-		blockmin.z = z
-		if z + (blsize.z - 1) > maxp.z then
-			blocksize.z = blsize.z - ((z + (blsize.z - 1)) - maxp.z)
-			centre.z = z + blocksize.z/2
-		end
-		for x=minp.x,maxp.x,blsize.x do
-			centre.x = x + halfsize.x
-			blockmin.x = x
-			if x + (blsize.x - 1) > maxp.x then
-				blocksize.x = blsize.x - ((x + (blsize.x -1)) - maxp.x)
-				centre.x = x + blocksize.x/2
-			end
-			local temp = generate_block(blocksize,centre,blockmin
-				,layer,seed,block_byot)
-			local blockstart = blockmin.x - minp.x + 1
-				+ (blockmin.z - minp.z)*mapsize.x 
-			blockfiller_2d(temp,blocksize,map,mapsize,blockstart)
-		end
-	end
-
-	return map
-end
-
-planetoids.experimental_2d = get_biome_map_2d_experimental
-	
 local function init_maps(layer)
 	--Setup layer maps if there are any
 	for map_index,def_table in ipairs(layer.biome_maps) do
@@ -547,149 +430,6 @@ local function init_maps(layer)
 	layer.maps_init = true
 end
 
---simple test to find the biome of a node
---used as the basis of the simple map generation methods
-local get_node_biome = function(pos,seed,layer)
-	local sector = pos_to_sector(pos,layer)
-	local dims = layer.dimensions
-	local points = {}
-	local x,y,z = -1,-1,-1
-	local index = 1
-	--Check that the maps have been initialised
-	if not layer.maps_init then
-		init_maps(layer)
-	end
-	
-	if dims == 3 then
-		for i=1,27 do
-			if x > 1 then
-				x = -1
-				y = y + 1
-			end
-			if y > 1 then
-				y = -1
-				z = z + 1
-			end
-			local temp = generate_biomed_points(vector_add(sector,{x=x,y=y,z=z})
-				,seed,layer)
-			for i,v in ipairs(temp) do
-				points[index] = v
-				index = index + 1
-			end
-			x = x + 1
-		end
-	else
-		for i=1,9 do
-			if x > 1 then
-				x = -1
-				z = z + 1
-			end
-			local temp = generate_biomed_points(vector_add(sector,{x=x,y=0,z=z})
-				,seed,layer)
-			for i,v in ipairs(temp) do
-				points[index] = v
-				index = index + 1
-			end
-			x = x + 1
-		end
-	end
-	return find_closest(pos,points,layer.get_dist_fast)
-end
-
-planetoids.get_node_biome = get_node_biome
-
---Simple biome map implimentation
---requires scaling to perform usably well
-local get_biome_map_3d_flat = function(minp,maxp,layer,seed,byot)
-	local ret = byot or {}
-	local nixyz = 1
-	local table_size = ((maxp.z - minp.z) + 1)*((maxp.y - minp.y) + 1)
-		*((maxp.x - minp.x) + 1)
-	local x,y,z = minp.x,minp.y,minp.z
-	for nixyz=1,table_size do
-		if x > maxp.x then
-			x = minp.x
-			y = y + 1
-		end
-		if y > maxp.y then
-			y = minp.y
-			z = z + 1
-		end
-		ret[nixyz] = get_node_biome({x=x,y=y,z=z},seed,layer)
-		x = x + 1
-	end
-	
-	return ret
-end
-
-planetoids.get_biome_map_3d_simple = get_biome_map_3d_flat
-
---Simple 2d biome map implimentation
---Functions usably without scaling - have not tested against the experimental
---function, should be slower though
-local get_biome_map_2d_flat = function(minp,maxp,layer,seed,byot)
-	local ret = byot or {}
-	local nixz = 1
-
-	for z=minp.z,maxp.z do
-		for x=minp.x,maxp.x do
-			ret[nixz] = get_node_biome({x=x,y=y,z=z},seed,layer)
-			nixz = nixz + 1
-		end
-	end
-	return ret
-end
-
-planetoids.get_biome_map_2d_simple = get_biome_map_2d_flat
-
---This function can be used to scale any compliant 2d map generator
---This adds an extra overhead - but this is negligable
-local scale_2d_map_flat = function(minp,maxp,layer,seed,map_gen,byot,scale_byot)
-	local minp,rmin = minp,minp
-	local maxp,rmax = maxp,maxp
-	if layer.scale then
-		minp = {x=floor(minp.x/scale),y=0,z=floor(minp.z/scale)}
-		maxp = {x=floor(maxp.x/scale),y=0,z=floor(maxp.z/scale)}
-	end
-
-	local ret
-	if layer.scale then
-		ret = scale_byot or {}
-	else
-		ret = byot or {}
-	end
-	
-	ret = map_gen(minp,maxp,layer,seed,map_gen,ret)
-
-	if layer.scale then
-		local nixz = 1
-		local scalxz = 1
-		local scalsidx = abs(maxp.x - minp.x) + 1
-		local sx,sz,ix = 0,0,1
-		local newret = byot or {}
-		for z=rmin.z,rmax.z do
-			sx = 0
-			for x=rmin.x,rmax.x do
-				newret[nixz] = ret[scalxz]
-				nixz = nixz + 1
-				sx = sx + 1
-				if sx == scale then
-					scalxz = scalxz + 1
-					sx = 0
-				end
-			end
-			sz = sz + 1
-			if sz ~= scale then
-				scalxz = ix
-			else
-				scalxz = ix + scalsidx
-				ix = scalxz
-				sz = 0
-			end
-		end
-		ret = newret
-	end
-end
 
 --This function can be used to scale any compliant 3d map generator
 --This adds an extra overhead - but this is negligable
@@ -778,25 +518,14 @@ planetoids.get_biome_map_flat = function(minp,maxp,layer,seed,byot)
 		init_maps(layer)
 	end
 	
-	if layer.dimensions == 3 then
-		local map_gen = nil
-		if layer.blocksize then
-			map_gen = get_biome_map_3d_experimental
-		else
-			map_gen = get_biome_map_3d_flat
-		end
-
-		return scale_3d_map_flat(minp,maxp,layer,seed,map_gen,byot,scale_byot)
+	local map_gen = nil
+	if layer.blocksize then
+		map_gen = get_biome_map_3d_experimental
 	else
-		local map_gen = nil	
-		if layer.blocksize then
-			map_gen = get_biome_map_2d_experimental
-		else
-			map_gen = get_biome_map_2d_flat
-		end
-			
-		return scale_2d_map_flat(minp,maxp,layer,seed,map_gen,byot,scale_byot)
+		map_gen = get_biome_map_3d_flat
 	end
+
+	return scale_3d_map_flat(minp,maxp,layer,seed,map_gen,byot,scale_byot)
 end
 
 planetoids.new_layer = function(def)
