@@ -528,6 +528,27 @@ planetoids.configure = function(settings)
 	end
 	--setup geometry function
 	set.dist = planetoids.geometry[set.geometry]
+
+	--setup random functions
+	local sum = 0
+	for i,v in ipairs(set.point_distribution) do
+		sum = sum + v
+	end
+	set.point_distribution.rand_max = sum
+
+	sum = 0
+	for i,v in ipairs(set.planet_types) do
+		local inner_sum = 0
+		for j,w in ipairs(v) do
+			inner_sum = inner_sum + w.rarity
+		end
+		v.rand_max = inner_sum
+
+		sum = sum + v.rarity
+	end
+
+	set.planet_types.rarity = sum
+		
 	
 	set.get_dist = set.dist._3d
 	set.get_dist_fast = set.dist._3d_fast or set.get_dist
