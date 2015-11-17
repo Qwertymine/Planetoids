@@ -518,12 +518,7 @@ planetoids.get_biome_map_flat = function(minp,maxp,layer,seed,byot)
 		init_maps(layer)
 	end
 	
-	local map_gen = nil
-	if layer.blocksize then
-		map_gen = get_biome_map_3d_experimental
-	else
-		map_gen = get_biome_map_3d_flat
-	end
+	local map_gen = get_biome_map_3d_experimental
 
 	return scale_3d_map_flat(minp,maxp,layer,seed,map_gen,byot,scale_byot)
 end
@@ -556,14 +551,10 @@ planetoids.new_layer = function(def)
 	end
 	--setup geometry function
 	layer.dist = planetoids.geometry[layer.geometry]
-	if layer.dimensions == 3 then
-		layer.get_dist = layer.dist._3d
-		layer.get_dist_fast = layer.dist._3d_fast or layer.get_dist
-	else
-		layer.get_dist = layer.dist._2d
-		layer.get_dist_fast = layer.dist._2d_fast or layer.get_dist
+	
+	layer.get_dist = layer.dist._3d
+	layer.get_dist_fast = layer.dist._3d_fast or layer.get_dist
 
-	end
 	--variable to track wether the noise maps have been initialised
 	if layer.biome_maps then
 		layer.maps_init = false

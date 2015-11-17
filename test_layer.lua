@@ -1,52 +1,89 @@
-local heatmap = {
-	map_type = "perlin",
-	dimensions = 3,
-
-	flags = nil,
-	lacunarity = 2,
-	octaves = 3,
-	offset = 50,
-	persistence = 0.5,
-	scale = 10,
-	seeddiff = 5349,
-	spread = {x=10,y=10,z=10},
+local coal = {
+	rarity = 10,
+	crust_material = "default:stone",
+	crust_thickness = 2,
+	filling_material = "default:stone_with_coal",
+}
+local lava = {
+	rarity = 5,
+	crust_material = "default:stone",
+	crust_thickness = 2,
+	filling_material = "default:lava_source",
+}
+local iron = {
+	rarity = 5,
+	crust_material = "default:stone",
+	crust_thickness = 2,
+	filling_material = "default:stone_with_iron",
+}
+local copper = {
+	rarity = 3,
+	crust_material = "default:stone",
+	crust_thickness = 2,
+	filling_material = "default:stone_with_copper",
+}
+local diamond = {
+	rarity = 1,
+	crust_material = "default:stone",
+	crust_thickness = 2,
+	filling_material = "default:stone_with_diamond",
+}
+local mese = {
+	rarity = 1,
+	crust_material = "default:stone",
+	crust_thickness = 2,
+	filling_material = "default:stone_with_mese",
+}
+local gravel = {
+	rarity = 1,
+	crust_material = "default:stone",
+	crust_thickness = 2,
+	filling_material = "default:gravel",
 }
 
-local wetmap = {
-	--These values are added for vcnlib
-	--This identifies the type of map
-	map_type = "perlin",
-	--This identifies the number of dimensions it can be generated in
-	--This is mainly to be able to use a 2d map in a 3d noise map
-	dimensions = 2,
-
-	--These are minetest Perlin noise flags
-	flags = nil,
-	lacunarity = 2,
-	octaves = 3,
-	--average temp
-	offset = 50,
-	persistence = 0.5,
-	--plus or mius value
-	scale = 10,
-	seeddiff = 842,
-	spread = {x=10,y=10,z=10},
+local stone = {
+	rarity = 10,
+	coal,lava,iron,copper,diamond,mese,gravel,
 }
 
+local dirt = {
+	rarity = 1,
+	filling_material = "default:dirt",
+}
+local sand = {
+	rarity = 1,
+	filling_material = "default:sand",
+}
+local desert_sand = {
+	crust_thickness = 2,
+	filling_material = "default:desert_sand",
+}
 
-vcnlib.new_layer{
-	--name of the layer, used to get a copy of it later
-	name = "test",
+local soft = {
+	rarity = 4,
+	dirt,sand,desert_sand,
+}
+
+local normal_tree = {
+	rarity = 1,
+	crust_material = "default:leaves",
+	crust_thickness = 2,
+	filling_material = "default:tree",
+}
+
+local tree = {
+	rarity = 7,
+	normal_tree,
+}
+	
+	
+planetoids.settings = {
 	--a number added to the world seed to amke different noises
 	seed_offset = 5,
-	--number of dimensions the noise changes over
-	dimensions = 3,
 	--scale to multiply the noise by(for performace)
 	--if not a factor of 80, there may be some artifacting at the edge
 	--of voxel manip blocks
-	scale = 5,
-	--This activates a more efficient algorithm which generates the map in
-	--blocks
+	scale = nil,
 	--This sets the size of the blocks that it generates, performance
 	--improves with size only for smaller sizes: 1^3 < small > 80^3
 	blocksize = {x=5,y=5,z=5},
@@ -63,56 +100,15 @@ vcnlib.new_layer{
 		[2] = 20,
 		[3] = 20,
 	},
-	--side lengths for sectors (approx size for one biome)
-	sector_lengths = {x=5,y=5,z=5,},
-	--how biomes are chosen
-	biome_types = {
-		[1] = "multi-tolerance-map",
-		[2] = "multi-map",
-		[3] = "random",
-		[4] = "fail"
+	planet_size = {
+		minimum = 5,
+		maximum = 25,
 	},
-	--perlin parameters for the heatmap and humidity map
-	biome_maps = {
-		--multimap maps
-		[1] = heatmap,
-		[2] = wetmap,
-	},
-	--tolerance levels for each biome map within which biomes are
-	--chosen at random
-	tolerance = {
-		--multimap tolerances
-		[1] = 10,
-		[2] = 10,
+	planet_types = {
+		stone,soft,tree
 	},
 	--how distance from the centre of a biome is judged
 	--changes he shape of generated biomes
 	geometry = "manhattan",
 }
 
-local test = vcnlib.get_layer("test")
-
-test:add_biome{
-	--name of biome
-	name = "bland",
-	--Values for numbered noisemaps
-	--heat for multi
-	[1] = 40,
-	--humidity for multi
-	[2] = 40,
-}
-test:add_biome{
-	name = "boring",
-	[1] = 50,
-	[2] = 40,
-}
-test:add_biome{
-	name = "drab",
-	[1] = 50,
-	[2] = 40,
-}
-test:add_biome{
-	name = "dull",
-	[1] = 60,
-	[2] = 60,
-}
