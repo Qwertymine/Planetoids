@@ -126,10 +126,12 @@ local generate_points = function(sector,seed)
 
 	--Distribution is completely user defined
 	local point_dist = planetoids.settings.point_distribution
-	local num = prand:next(point_dist.random_min,point_dist.random_max)
+	local num = prand:next(1,point_dist.rand_max)
 	local set = false
+	local cum = 0
 	for i=#point_dist,1,-1 do
-		if num >= point_dist[i] then
+		cum = point_dist[i] + cum
+		if num < cum then
 			num = i
 			set = true
 			break
@@ -148,15 +150,28 @@ local generate_points = function(sector,seed)
 		--The points are aligned to 0.1 of a block
 		--This used to be to 1 block, but having multiple points at
 		--the same distance was causing artifacts with the experimental gen
-		local x = prand:next(0,(planetoids.settings.sector_lengths.x-1)*10)
-		local y = prand:next(0,(planetoids.settings.sector_lengths.y-1)*10)
-		local z = prand:next(0,(planetoids.settings.sector_lengths.z-1)*10)
-		local pos = {x=x/10,y=y/10,z=z/10}
+		local get_dist = planetoids.settings.get_dist
+		local x = prand:next(0,planetoids.settings.sector_lengths.x-1)
+		local y = prand:next(0,planetoids.settings.sector_lengths.y-1)
+		local z = prand:next(0,planetoids.settings.sector_lengths.z-1)
+		local pos = {x=x,y=y,z=z}
 		local hashed = hash_pos(pos)
 		if not seen[hashed] then
 			pos = vector_add(pos,sector_to_pos(sector))
-			table.insert(points,pos)
-			seen[hashed] = pos
+			local radius = prand:next(planetoids.settings.planet_sizes.minimum,
+				planetoids.settings.planet_sizes.maximum)
+			local touching = false
+			for i,v in ipairs(points) do
+				if radius + v.radius > get_dist(pos,v.pos) then
+					touching = true
+					break
+				end
+			end
+			if not touching then
+				point = {pos = pos,radius = radius}
+				table.insert(points,point)
+				seen[hashed] = pos
+			end
 		end
 		num = num - 1
 	end
