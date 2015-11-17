@@ -58,15 +58,9 @@ local vector_add = function(a,b)
 	return {x=a.x+b.x,y=a.y+b.y,z=a.z+b.z}
 end
 
---this could be stored in the layer - possibly tracked at biome addition
-local get_biome_num = function(layer)
-	return layer.biome_number
-end
-
-
 --sector 0,0,0 has a smallest point at 0,0,0
-local sector_to_pos = function(sector,layer)
-	local lengths = layer.sector_lengths
+local sector_to_pos = function(sector)
+	local lengths = planetoids.settings.sector_lengths
 	local pos = {}
 	pos.x = lengths.x * sector.x
 	pos.y = lengths.y * sector.y
@@ -74,12 +68,9 @@ local sector_to_pos = function(sector,layer)
 	return pos
 end
 
---add function to api
-planetoids.sector_to_pos = sector_to_pos
-
 --point 0,0,0 is in sector 0,0,0
-local pos_to_sector = function(pos,layer)
-	local lengths = layer.sector_lengths
+local pos_to_sector = function(pos)
+	local lengths = planetoids.settings.sector_lengths
 	local sector = {x=pos.x,y=pos.y,z=pos.z}
 	sector.x = floor(sector.x/lengths.x)
 	sector.z = floor(sector.z/lengths.z)
@@ -87,10 +78,6 @@ local pos_to_sector = function(pos,layer)
 	return sector
 end
 
-planetoids.pos_to_sector = pos_to_sector 
-
---This is hot code, so checks are kept out of the looping sections
---so there is a lot of code duplication
 local find_closest = function(pos,points,dist_func)
 	local dist = nil
 	local mini = math.huge
@@ -132,13 +119,13 @@ end
 
 --Uses PcgRandom for better range - a 32 bit random would limit sector sizes to
 -- 600^3 due to randomness issues
-local generate_points = function(sector,seed,layer)
+local generate_points = function(sector,seed)
 	local hash = hash_pos(sector)
-	local offset = layer.seed_offset
+	local offset = planetoids.settings.seed_offset
 	local prand = PcgRandom(hash + (seed + offset) % 100000)
 
 	--Distribution is completely user defined
-	local point_dist = layer.point_distribution
+	local point_dist = planetoids.settings.point_distribution
 	local num = prand:next(point_dist.random_min,point_dist.random_max)
 	local set = false
 	for i=#point_dist,1,-1 do
@@ -161,13 +148,13 @@ local generate_points = function(sector,seed,layer)
 		--The points are aligned to 0.1 of a block
 		--This used to be to 1 block, but having multiple points at
 		--the same distance was causing artifacts with the experimental gen
-		local x = prand:next(0,(layer.sector_lengths.x-1)*10)
-		local y = prand:next(0,(layer.sector_lengths.y-1)*10)
-		local z = prand:next(0,(layer.sector_lengths.z-1)*10)
+		local x = prand:next(0,(planetoids.settings.sector_lengths.x-1)*10)
+		local y = prand:next(0,(planetoids.settings.sector_lengths.y-1)*10)
+		local z = prand:next(0,(planetoids.settings.sector_lengths.z-1)*10)
 		local pos = {x=x/10,y=y/10,z=z/10}
 		local hashed = hash_pos(pos)
 		if not seen[hashed] then
-			pos = vector_add(pos,sector_to_pos(sector,layer))
+			pos = vector_add(pos,sector_to_pos(sector))
 			table.insert(points,pos)
 			seen[hashed] = pos
 		end
@@ -181,9 +168,9 @@ end
 --This function is used to get the maps required for generate_biomed_points below
 --The in-built maps have to be treated differently to the custom ones, as no
 --extra data can be stored in the perlin map userdata
-local function get_point_maps(point, layer)
+local function get_point_maps(point)
 	local maps = {}
-	for i,v in ipairs(layer.biome_maps) do
+	for i,v in ipairs(planetoids.settings.biome_maps) do
 		if v.perlin then
 			if v.dims == 3 then
 				maps[i] = v.perlin:get3d(point)
@@ -200,15 +187,15 @@ end
 
 --This is a wrapper around generate_points - this adds biomes and doesn't return the random
 --number generator
-local generate_biomed_points = function(sector,seed,layer)
+local generate_biomed_points = function(sector,seed)
 	local hash = hash_pos(sector)
 	--This is a cache for storing points that were already generated
 	--this should improve performance - but profiling breaks it
-	if layer.cache[hash] then
-		return layer.cache[hash]
+	if planetoids.cache[hash] then
+		return planetoids.cache[hash]
 	end
 	local points,prand = generate_points(sector,seed,layer)
-	local biome_types = layer.biome_types
+	local biome_types = planetoids.settings.biome_types
 	local ret = {}
 	for i=1,#points do
 		local point = points[i]
@@ -217,14 +204,14 @@ local generate_biomed_points = function(sector,seed,layer)
 		for method=1,#biome_types do
 			local biome_meth = biome_types[method]
 			if biome_meth == "random" then
-				local num = prand:next(1,get_biome_num(layer))
-				biome = layer.biomes[num]
+				local num = prand:next(1,--[[TODO]])
+				biome = planetoids.settings.biomes[num]
 			elseif biome_meth == "multi-map" then
 				if not maps then
-					maps = get_point_maps(point, layer)
+					maps = get_point_maps(point)
 				end
 				local min_dist = math.huge
-				for j,k in ipairs(layer.biome_defs) do
+				for j,k in ipairs(planetoids.settings.biome_defs) do
 					local this_dist = 0
 					for l,m in ipairs(maps) do
 						this_dist = this_dist + abs(k[l] - m)
@@ -235,12 +222,12 @@ local generate_biomed_points = function(sector,seed,layer)
 					end
 				end
 			elseif biome_meth == "multi-tolerance-map" then
-				local tol = layer.tolerance
+				local tol = planetoids.settings.tolerance
 				if not maps then
-					maps = get_point_maps(point, layer)
+					maps = get_point_maps(point)
 				end
 				local biomes = {}
-				for j,k in ipairs(layer.biome_defs) do
+				for j,k in ipairs(planetoids.settings.biome_defs) do
 					local add = true
 					for l,m in ipairs(maps) do
 						local diff = abs(k[l] - m)
@@ -269,19 +256,19 @@ local generate_biomed_points = function(sector,seed,layer)
 			biome = biome,
 		})
 	end
-	layer.cache[hash] = ret 
+	planetoids.cache[hash] = ret 
 	return ret
 end
 
-local generate_block = function(blocksize,blockcentre,blockmin,layer,seed,byot)
+local generate_block = function(blocksize,blockcentre,blockmin,seed,byot)
 	local points = {}
 	local block = byot or {}
 	local index = 1
-	local geo = layer.geometry
+	local geo = planetoids.settings.geometry
 	local blockmax = {x=blockmin.x+(blocksize.x-1),y=blockmin.y+(blocksize.y -1)
 		,z=blockmin.z+(blocksize.z-1)}
-	local sector = pos_to_sector(blockcentre,layer)
-	local get_dist = layer.get_dist
+	local sector = pos_to_sector(blockcentre)
+	local get_dist = planetoids.settings.get_dist
 	-- points in moore raduis
 	local x,y,z = -1,-1,-1
 	for i=1,27 do
@@ -294,7 +281,7 @@ local generate_block = function(blocksize,blockcentre,blockmin,layer,seed,byot)
 			z = z + 1
 		end
 		local temp = generate_biomed_points(vector_add(sector,{x=x,y=y,z=z})
-			,seed,layer)
+			,seed)
 		for i,v in ipairs(temp) do
 			points[index] = v
 			v.dist = get_dist(blockcentre,v.pos)
@@ -314,7 +301,7 @@ local generate_block = function(blocksize,blockcentre,blockmin,layer,seed,byot)
 		end
 	end
 	--Switch to fast distance type when doing comparison only calcs
-	get_dist = layer.get_dist_fast
+	get_dist = planetoids.settings.get_dist_fast
 	if #points == 1 then
 		local tablesize = blocksize.x*blocksize.y*blocksize.z
 		local x,y,z = blockmin.x,blockmin.y,blockmin.z
@@ -355,9 +342,9 @@ local shared_block_byot = {}
 
 --map is generated in blocks
 --this allows for distance testing to reduce the number of points to test
-local get_biome_map_3d_experimental = function(minp,maxp,layer,seed,byot)
+local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
 	--normal block size
-	local blsize = layer.blocksize or {x=5,y=5,z=5}
+	local blsize = planetoids.settigns.blocksize or {x=5,y=5,z=5}
 	local halfsize = {x=blsize.x/2,y=blsize.y/2,z=blsize.z/2}
 	local centre = {x=minp.x+halfsize.x,y=minp.y+halfsize.y,z=minp.z+halfsize.z}
 	--the size of this block
@@ -393,7 +380,7 @@ local get_biome_map_3d_experimental = function(minp,maxp,layer,seed,byot)
 					centre.x = x + blocksize.x/2
 				end
 				local temp = generate_block(blocksize,centre,blockmin
-					,layer,seed,block_byot)
+					,seed,block_byot)
 				local blockstart = blockmin.x - minp.x + 1
 					+ (blockmin.y - minp.y)*mapsize.x 
 					+ (blockmin.z - minp.z)*mapsize.x*mapsize.y 
@@ -407,12 +394,12 @@ end
 
 planetoids.experimental_3d = get_biome_map_3d_experimental
 
-local function init_maps(layer)
+local function init_maps()
 	--Setup layer maps if there are any
-	for map_index,def_table in ipairs(layer.biome_maps) do
+	for map_index,def_table in ipairs(planetoids.settings.biome_maps) do
 		--Add layer offset to map seed offset
 		if def_table.seed_offset then
-			def_table.seed_offset = def_table.seed_offset + layer.seed_offset
+			def_table.seed_offset = def_table.seed_offset + planetoids.settings.seed_offset
 		end
 		--Variable to contruct the final map object
 		local biome_map = nil
@@ -425,19 +412,19 @@ local function init_maps(layer)
 			biome_map = planetoids.get_map_object(def_table)
 		end
 		--Replace def_table with map object
-		layer.biome_maps[map_index] = biome_map
+		planetoids.settings.biome_maps[map_index] = biome_map
 	end
-	layer.maps_init = true
+	planetoids.settings.maps_init = true
 end
 
 
 --This function can be used to scale any compliant 3d map generator
 --This adds an extra overhead - but this is negligable
-local scale_3d_map_flat = function(minp,maxp,layer,seed,map_gen,byot,scale_byot)
-	local scale = layer.scale
+local scale_3d_map_flat = function(minp,maxp,seed,map_gen,byot,scale_byot)
+	local scale = planetoids.settings.scale
 	local minp,rmin = minp,minp
 	local maxp,rmax = maxp,maxp
-	if layer.scale then
+	if scale then
 		minp = {x=floor(minp.x/scale),y=floor(minp.y/scale)
 			,z=floor(minp.z/scale)}
 			--Replace def_table with map object
@@ -446,13 +433,13 @@ local scale_3d_map_flat = function(minp,maxp,layer,seed,map_gen,byot,scale_byot)
 	end
 
 	local ret
-	if layer.scale then
+	if scale then
 		ret = scale_byot or {}
 	else
 		ret = byot or {}
 	end
 
-	ret = map_gen(minp,maxp,layer,seed,ret)
+	ret = map_gen(minp,maxp,seed,ret)
 
 	if scale then
 		local nixyz = 1
@@ -508,73 +495,57 @@ local shared_scale_byot = {}
 --for any layer type
 --Attempts to choose the most optimal type for a given layer
 --All scale code is condtional, so is safe to add to any mapgen
-planetoids.get_biome_map_flat = function(minp,maxp,layer,seed,byot)
+planetoids.get_map_flat = function(minp,maxp,seed,byot)
 	local scale_byot = nil
 	if byot then
 		scale_byot = shared_scale_byot
 	end
 
-	if not layer.maps_init then
-		init_maps(layer)
+	if not planetoids.maps_init then
+		init_maps()
 	end
 	
 	local map_gen = get_biome_map_3d_experimental
 
-	return scale_3d_map_flat(minp,maxp,layer,seed,map_gen,byot,scale_byot)
+	return scale_3d_map_flat(minp,maxp,seed,map_gen,byot,scale_byot)
 end
 
-planetoids.new_layer = function(def)
-	local name = def.name
-	if planetoids.layers[name] then
-		return
-	end
-	--Register layer into global table
-	planetoids.layers[name] = def
-	local layer = planetoids.layers[name]
+planetoids.configure = function(settings)
+	planetoids.settings = settings
+	local set = planetoids.settings
 
 	--Default seed offset, to avoid errors layer where it is required
-	layer.seed_offset = layer.seed_offset or 0
+	set.seed_offset = set.seed_offset or 0
 
 	--Number indexed table of biome names
-	layer.biomes = {}
+	set.biomes = {}
 	--Key indexed table of biomes - indexed by biome.name
-	layer.biome_defs ={}
-	layer.biome_number = 0
+	set.biome_settingss ={}
+	set.biome_number = 0
 	--Layer object member functions
-	layer.get_biome_list = function(self,to_get)
+	set.get_biome_list = function(self,to_get)
 		return self.biomes
 	end
-	layer.add_biome = function(self,biome_def)
-		table.insert(self.biomes,biome_def.name)
-		table.insert(self.biome_defs,biome_def)
-		self.biome_number = self.biome_number + 1
-	end
 	--setup geometry function
-	layer.dist = planetoids.geometry[layer.geometry]
+	set.dist = planetoids.geometry[set.geometry]
 	
-	layer.get_dist = layer.dist._3d
-	layer.get_dist_fast = layer.dist._3d_fast or layer.get_dist
+	set.get_dist = set.dist._3d
+	set.get_dist_fast = set.dist._3d_fast or set.get_dist
 
 	--variable to track wether the noise maps have been initialised
-	if layer.biome_maps then
-		layer.maps_init = false
+	if set.biome_maps then
+		set.maps_init = false
 	else
-		layer.maps_init = true
+		set.maps_init = true
 	end
 
 	--setup layer cache to chache generated points
-	layer.cache = setmetatable({},planetoids.meta_cache)
-	return layer
-end
-
---for mods which are using a pre-defined biome layer
-planetoids.get_layer = function(to_get)
-	return planetoids.layers[to_get]
+	set.cache = setmetatable({},planetoids.meta_cache)
+	planetoids.cache = set.cache
 end
 
 planetoids.meta_cache = {
 	__mode = "v",
 }
 
---dofile(minetest.get_modpath("planetoids").."/testtools.lua")
---dofile(minetest.get_modpath("planetoids").."/test_layer.lua")
+dofile(minetest.get_modpath("planetoids").."/settings.lua")
