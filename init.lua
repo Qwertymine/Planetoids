@@ -418,6 +418,7 @@ local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
 		block_byot = shared_block_byot
 	end
 
+	local source = generate_point_area(minp,maxp,seed)
 	for z=minp.z,maxp.z,blsize.z do
 		centre.z = z + halfsize.z
 		blockmin.z = z
@@ -580,7 +581,7 @@ planetoids.configure = function(settings)
 	--Number indexed table of biome names
 	set.biomes = {}
 	--Key indexed table of biomes - indexed by biome.name
-	set.biome_settingss ={}
+	set.biome_settings ={}
 	set.biome_number = 0
 	--Layer object member functions
 	set.get_biome_list = function(self,to_get)
@@ -609,6 +610,9 @@ planetoids.configure = function(settings)
 
 	set.planet_types.rarity = sum
 		
+	--setup sector lengths
+	local length = set.planet_size.maximum * 2
+	set.sector_lengths = {x=length,y=length,z=length}
 	
 	set.get_dist = set.dist._3d
 	set.get_dist_fast = set.dist._3d_fast or set.get_dist
