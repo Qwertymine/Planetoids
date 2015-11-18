@@ -78,19 +78,21 @@ local pos_to_sector = function(pos)
 	return sector
 end
 
-local find_closest = function(pos,points,dist_func)
+local find_node = function(pos,points,dist_func)
 	local dist = nil
-	local mini = math.huge
-	local biome = nil
+	local node = nil
 	for i=1,#points do
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
-		if dist < mini then
-			mini = dist
-			biome = point.biome
+		if dist < point.radius then
+			if dist < point.radius - point.ptype.crust_thickness then
+				return point.ptype.filler
+			else
+				return point.ptype.crust_material
+			end
 		end
 	end
-	return biome
+	return "air"
 end
 
 --block locations must start at (0,0,0)
@@ -288,8 +290,8 @@ local function remove_collisions(sector,source)
 			for l=sector.z-1,sector.z+1 do
 				comp.z = l
 				local hash_z = (l + 32768) * 65536 * 65536
-				local comp_sector = source[hash_z + hash_y + hash_x]
 				if not sector_precidence(sector,comp) then
+					local comp_sector = source[hash_z + hash_y + hash_x]
 					point_remover(this_sector,comp_sector)
 				end
 			end
@@ -325,7 +327,7 @@ local function generate_point_area(minp,maxp,seed)
 end
 
 
-local generate_block = function(blocksize,blockcentre,blockmin,seed,byot)
+local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 	local points = {}
 	local block = byot or {}
 	local index = 1
@@ -334,40 +336,32 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,byot)
 		,z=blockmin.z+(blocksize.z-1)}
 	local sector = pos_to_sector(blockcentre)
 	local get_dist = planetoids.settings.get_dist
+	local cube_max_dist = get_dist(blockmin,blockcentre)
 	-- points in moore raduis
-	local x,y,z = -1,-1,-1
+	local sector = {x=-1,y=-1,z=-1}
 	for i=1,27 do
-		if x > 1 then
-			x = -1
-			y = y + 1
+		if sector.x > 1 then
+			sector.x = -1
+			sector.y = sector.y + 1
 		end
-		if y > 1 then
-			y = -1
-			z = z + 1
+		if sector.y > 1 then
+			sector.y = -1
+			sector.z = sector.z + 1
 		end
-		local temp = generate_biomed_points(vector_add(sector,{x=x,y=y,z=z})
-			,seed)
+
+		local temp = source[hash_pos(sector)]
 		for i,v in ipairs(temp) do
-			points[index] = v
-			v.dist = get_dist(blockcentre,v.pos)
-			index = index + 1
+			local dist = get_dist(blockcentre,v.pos)
+			if dist < v.radius + cube_max_dist then
+				points[index] = v
+				v.dist = dist
+				index = index + 1
+			end
 		end
-		x = x + 1
+		sector.x = sector.x + 1
 	end
 	
-	table.sort(points,function(a,b) return a.dist < b.dist end) 
-	local to_nil = false
-	local max_dist = points[1].dist + get_dist(blockmin,blockcentre)
-	for i=1,#points do
-		if to_nil then
-			points[i] = nil
-		elseif points[i].dist > max_dist then
-			to_nil = true
-		end
-	end
-	--Switch to fast distance type when doing comparison only calcs
-	get_dist = planetoids.settings.get_dist_fast
-	if #points == 1 then
+	if #points == 0 then
 		local tablesize = blocksize.x*blocksize.y*blocksize.z
 		local x,y,z = blockmin.x,blockmin.y,blockmin.z
 		local biome = point[1].biome
@@ -380,7 +374,7 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,byot)
 				y = blockmin.y
 				z = z + 1
 			end
-			block[i] = biome
+			block[i] = "air"
 			x = x + 1
 		end
 	else
@@ -395,7 +389,7 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,byot)
 				y = blockmin.y
 				z = z + 1
 			end
-			block[i] = find_closest({x=x,y=y,z=z}
+			block[i] = find_block({x=x,y=y,z=z}
 				,points,get_dist)
 			x = x + 1
 		end
