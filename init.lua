@@ -180,29 +180,9 @@ local generate_points = function(sector,seed)
 	return points , prand
 end
 
---This function is used to get the maps required for generate_biomed_points below
---The in-built maps have to be treated differently to the custom ones, as no
---extra data can be stored in the perlin map userdata
-local function get_point_maps(point)
-	local maps = {}
-	for i,v in ipairs(planetoids.settings.biome_maps) do
-		if v.perlin then
-			if v.dims == 3 then
-				maps[i] = v.perlin:get3d(point)
-			else
-				local point = {x=point.x,y=point.z}
-				maps[i] = v.perlin:get2d(point)
-			end
-		else
-			maps[i] = v:get_noise(point)
-		end
-	end
-	return maps
-end
-
 --This is a wrapper around generate_points - this adds biomes and doesn't return the random
 --number generator
-local generate_biomed_points = function(sector,seed)
+local generate_decorated_points = function(sector,seed)
 	local hash = hash_pos(sector)
 	--This is a cache for storing points that were already generated
 	--this should improve performance - but profiling breaks it
@@ -210,69 +190,47 @@ local generate_biomed_points = function(sector,seed)
 		return planetoids.cache[hash]
 	end
 	local points,prand = generate_points(sector,seed,layer)
-	local biome_types = planetoids.settings.biome_types
+	local planet_types = planetoids.planet_types
 	local ret = {}
 	for i=1,#points do
 		local point = points[i]
-		local biome = nil
-		local maps = nil
-		for method=1,#biome_types do
-			local biome_meth = biome_types[method]
-			if biome_meth == "random" then
-				local num = prand:next(1,--[[TODO]])
-				biome = planetoids.settings.biomes[num]
-			elseif biome_meth == "multi-map" then
-				if not maps then
-					maps = get_point_maps(point)
-				end
-				local min_dist = math.huge
-				for j,k in ipairs(planetoids.settings.biome_defs) do
-					local this_dist = 0
-					for l,m in ipairs(maps) do
-						this_dist = this_dist + abs(k[l] - m)
-					end
-					if this_dist < min_dist then
-						biome = k.name
-						min_dist = this_dist
-					end
-				end
-			elseif biome_meth == "multi-tolerance-map" then
-				local tol = planetoids.settings.tolerance
-				if not maps then
-					maps = get_point_maps(point)
-				end
-				local biomes = {}
-				for j,k in ipairs(planetoids.settings.biome_defs) do
-					local add = true
-					for l,m in ipairs(maps) do
-						local diff = abs(k[l] - m)
-						if diff > tol[l] then
-							add = false
-							break
-						end
-					end
-					if add then
-						table.insert(biomes,k)
-					end
-				end
-				local bionum = #biomes
-				if bionum ~= 0 then
-					biome = biomes[prand:next(1,bionum)].name
-				end
-			else
-				biome = biome_meth
-			end
-			if biome then
+		
+		--choose plaent type
+		local cum = 0
+		local ptype = prand:next(1,planet_types.rand_max)
+		for i=#planet_types,1,-1 do
+			cum = planet_types[i].rarity + cum
+			if ptype < cum then
+				ptype = planet_types[i]
 				break
 			end
 		end
-		table.insert(ret,{
-			pos = point,
-			biome = biome,
-		})
+		--If no suitable number of points is found, 1 is set as a fallback
+		if not ptype then
+			ptype = plant_types[1]
+		end
+
+		--choose specific planet
+		local num = prand:next(1,choice.rand_max)
+		local set = false
+		local cum = 0
+		for i=#ptype,1,-1 do
+			cum = ptype[i].rarity + cum
+			if num < cum then
+				ptype = ptype[i]
+				set = true
+				break
+			end
+		end
+		--If no suitable number of points is found, 1 is set as a fallback
+		if not set then
+			ptype = ptype[1]
+		end
+
+		point.ptype = ptype
 	end
-	planetoids.cache[hash] = ret 
-	return ret
+	planetoids.cache[hash] = points 
+	return points
 end
 
 local generate_block = function(blocksize,blockcentre,blockmin,seed,byot)
