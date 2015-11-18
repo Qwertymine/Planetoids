@@ -191,7 +191,6 @@ local generate_decorated_points = function(sector,seed)
 	end
 	local points,prand = generate_points(sector,seed,layer)
 	local planet_types = planetoids.planet_types
-	local ret = {}
 	for i=1,#points do
 		local point = points[i]
 		
@@ -232,6 +231,99 @@ local generate_decorated_points = function(sector,seed)
 	planetoids.cache[hash] = points 
 	return points
 end
+
+--removes points from sector which collide with those in comp
+--tries to shrink first
+local function point_remover(sector,comp)
+	local get_dist = planetoids.settings.get_dist
+	for index,point in ipairs(sector) do
+		for _,comp_point in ipairs(sector) do
+				local dist = get_dist(point,comp_point)
+			if comp_point.radius + point.radius > dist then
+				point.radius = dist - comp_point.radius - 2
+				if point.radius 
+				< planetoids.settings.planet_size.minimum then
+					table.remove(sector,index)
+				end
+			end
+		end
+	end
+end
+
+--returns true is sector has a higher precience than comp
+--or both are the same value
+local function sector_precidence(sector,comp)
+	if sector.x ~= comp.x then
+		if sector.x % 2 == 0 then
+			return true
+		else
+			return false
+		end
+	elseif sector.y ~= comp.y then
+		if sector.y % 2 == 0 then
+			return true
+		else
+			return false
+		end
+	elseif sector.z ~= comp.z then
+		if sector.z % 2 == 0 then
+			return true
+		else
+			return false
+		end
+	end
+	return true
+end
+
+local function remove_collisions(sector,source)
+	local hash =  hash_pos(sector)
+	local this_sector = source[hash]
+	local comp = {x=0,y=0,z=0}
+	for i=sector.x-1,sector.x+1 do
+		local hash_x = i + 32768
+		comp.x = i
+		for j=sector.y-1,sector.y+1 do
+			local hash_y = (j + 32768) * 65536
+			comp.y = j
+			for l=sector.z-1,sector.z+1 do
+				comp.z = l
+				local hash_z = (l + 32768) * 65536 * 65536
+				local comp_sector = source[hash_z + hash_y + hash_x]
+				if not sector_precidence(sector,comp) then
+					point_remover(this_sector,comp_sector)
+				end
+			end
+		end
+	end
+end
+
+local function generate_point_area(minp,maxp,seed)
+	local min_sector = pos_to_sector(minp)
+	local max_sector = pos_to_sector(maxp)
+	local sectors = {}
+	--populate table with sectors
+	for i=min_sector.x-1,max_sector.x+1 do
+		local hash_x = i + 32768
+		for j=min_sector.y-1,max_sector.y+1 do
+			local hash_y = (j + 32768) * 65536
+			for l=min_sector.z-1,max_sector.z+1 do
+				local hash_z = (l + 32768) * 65536 * 65536
+				sectors[hash_z + hash_y + hash_x] = generate_decorated_points({x=i,y=j,l=k},seed)
+			end
+		end
+	end
+	--Remove colliding points
+	for i=min_sector.x,max_sector.x do
+		for j=min_sector.y,max_sector.y do
+			for l=min_sector.z,max_sector.z do
+				remove_collisions({x=i,y=j,z=l},points)
+			end
+		end
+	end
+	--return the table - still hashed for use in later functions
+	return sectors
+end
+
 
 local generate_block = function(blocksize,blockcentre,blockmin,seed,byot)
 	local points = {}
