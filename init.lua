@@ -338,18 +338,18 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 	local get_dist = planetoids.settings.get_dist
 	local cube_max_dist = get_dist(blockmin,blockcentre)
 	-- points in moore raduis
-	local sector = {x=-1,y=-1,z=-1}
+	local x,y,z = -1,-1,-1
 	for i=1,27 do
-		if sector.x > 1 then
-			sector.x = -1
-			sector.y = sector.y + 1
+		if x > 1 then
+			x = -1
+			y = y + 1
 		end
-		if sector.y > 1 then
-			sector.y = -1
-			sector.z = sector.z + 1
+		if y > 1 then
+			y = -1
+			z = z + 1
 		end
 
-		local temp = source[hash_pos(sector)]
+		local temp = source[hash_pos({x=sector.x+x,y=sector.y+y,z=sector.z+z})]
 		for i,v in ipairs(temp) do
 			local dist = get_dist(blockcentre,v.pos)
 			if dist < v.radius + cube_max_dist then
@@ -358,7 +358,8 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 				index = index + 1
 			end
 		end
-		sector.x = sector.x + 1
+		x = x + 1
+
 	end
 	
 	if #points == 0 then
@@ -389,7 +390,7 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 				y = blockmin.y
 				z = z + 1
 			end
-			block[i] = find_block({x=x,y=y,z=z}
+			block[i] = find_node({x=x,y=y,z=z}
 				,points,get_dist)
 			x = x + 1
 		end
@@ -439,7 +440,7 @@ local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
 					centre.x = x + blocksize.x/2
 				end
 				local temp = generate_block(blocksize,centre,blockmin
-					,seed,block_byot)
+					,seed,source,block_byot)
 				local blockstart = blockmin.x - minp.x + 1
 					+ (blockmin.y - minp.y)*mapsize.x 
 					+ (blockmin.z - minp.z)*mapsize.x*mapsize.y 
