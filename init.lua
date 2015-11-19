@@ -90,6 +90,9 @@ local find_node = function(pos,points,dist_func)
 				if dist < point.radius - point.ptype.crust_thickness then
 					return point.ptype.filling_material
 				else
+					if point.ptype.crust_top_material and pos.y >= point.pos.y then
+						return point.ptype.crust_top_material
+					end
 					return point.ptype.crust_material
 				end
 			else
