@@ -141,7 +141,7 @@ local generate_points = function(sector,seed)
 	local cum = 0
 	for i=#point_dist,1,-1 do
 		cum = point_dist[i] + cum
-		if num < cum then
+		if num <= cum then
 			num = i
 			set = true
 			break
