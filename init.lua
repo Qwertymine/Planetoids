@@ -150,7 +150,7 @@ local generate_points = function(sector,seed)
 
 	--If no suitable number of points is found, 1 is set as a fallback
 	if not set then
-		num = 0
+		num = planetoids.settings.planet_size.default
 	end
 
 	--Generate each point
@@ -601,8 +601,12 @@ planetoids.configure = function()
 
 	set.planet_types.rand_max = sum
 		
+	--setup scale factor
+	if set.planet_size.sector_scale < 2 then
+		set.planet_size.sector_scale = 2
+	end
 	--setup sector lengths
-	local length = set.planet_size.maximum * 2
+	local length = set.planet_size.maximum * set.planet_size.sector_scale
 	set.sector_lengths = {x=length,y=length,z=length}
 	
 	--setup geometry function

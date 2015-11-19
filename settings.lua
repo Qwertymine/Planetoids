@@ -1,11 +1,11 @@
 local coal = {
-	rarity = 10,
+	rarity = 30,
 	crust_material = "default:stone",
 	crust_thickness = 2,
 	filling_material = "default:stone_with_coal",
 }
 local lava = {
-	rarity = 5,
+	rarity = 15,
 	crust_material = "default:stone",
 	crust_thickness = 2,
 	filling_material = "default:lava_source",
@@ -17,25 +17,25 @@ local iron = {
 	filling_material = "default:stone_with_iron",
 }
 local copper = {
-	rarity = 3,
+	rarity = 5,
 	crust_material = "default:stone",
 	crust_thickness = 2,
 	filling_material = "default:stone_with_copper",
 }
 local diamond = {
-	rarity = 1,
+	rarity = 2,
 	crust_material = "default:stone",
 	crust_thickness = 2,
 	filling_material = "default:stone_with_diamond",
 }
 local mese = {
-	rarity = 1,
+	rarity = 2,
 	crust_material = "default:stone",
 	crust_thickness = 2,
 	filling_material = "default:stone_with_mese",
 }
 local gravel = {
-	rarity = 1,
+	rarity = 2,
 	crust_material = "default:stone",
 	crust_thickness = 2,
 	filling_material = "default:gravel",
@@ -140,13 +140,17 @@ planetoids.settings = {
 	--The number value is the minimum random number required for that value
 	--to be chosen
 	point_distribution = {
-		[0] = 80,
+		default = 1,
 		[1] = 60,
 		[2] = 40,
+		[3] = 40,
+		[4] = 40,
 	},
 	planet_size = {
 		minimum = 5,
 		maximum = 15,
+		--size of sector as multiple of maximum, must be > 2
+		sector_scale = 4,
 	},
 	planet_types = {
 		stone,soft,tree,glass,
