@@ -404,7 +404,7 @@ local shared_block_byot = {}
 --this allows for distance testing to reduce the number of points to test
 local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
 	--normal block size
-	local blsize = planetoids.settigns.blocksize or {x=5,y=5,z=5}
+	local blsize = planetoids.settings.blocksize or {x=5,y=5,z=5}
 	local halfsize = {x=blsize.x/2,y=blsize.y/2,z=blsize.z/2}
 	local centre = {x=minp.x+halfsize.x,y=minp.y+halfsize.y,z=minp.z+halfsize.z}
 	--the size of this block
@@ -543,8 +543,7 @@ planetoids.get_map_flat = function(minp,maxp,seed,byot)
 	return scale_3d_map_flat(minp,maxp,seed,map_gen,byot,scale_byot)
 end
 
-planetoids.configure = function(settings)
-	planetoids.settings = settings
+planetoids.configure = function()
 	local set = planetoids.settings
 
 	--Default seed offset, to avoid errors layer where it is required
