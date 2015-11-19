@@ -86,7 +86,7 @@ local find_node = function(pos,points,dist_func)
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
 		if dist < point.radius then
-			if crust_thickness then
+			if point.ptype.crust_thickness then
 				if dist < point.radius - point.ptype.crust_thickness then
 					return point.ptype.filling_material
 				else
@@ -620,3 +620,60 @@ planetoids.meta_cache = {
 }
 
 dofile(minetest.get_modpath("planetoids").."/settings.lua")
+
+
+--MAPGEN
+
+local c_air     = minetest.get_content_id("air")
+local c_ignore  = minetest.get_content_id("ignore")
+local c_stone   = minetest.get_content_id("default:stone")
+local c_error   = minetest.get_content_id("default:obsidian")
+
+--Bring your own table for voronoi noise
+local planets = {}
+
+minetest.register_on_generated(function(minp, maxp, seed)
+	local pr = PseudoRandom(seed)
+
+	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
+	local data = vm:get_data()
+
+	local side_length = math.abs(maxp.x - minp.x) + 1
+	local biglen = side_length+32
+
+	local chulens = {x=side_length, y=side_length, z=side_length}
+
+	if not map_seed then
+		map_seed = minetest.get_mapgen_params().seed
+	end
+
+	local planets = planets
+	planets = planetoids.get_map_flat(minp,maxp,map_seed,planets)
+
+	local nixyz = 1
+	local nixz = 1
+	for z = minp.z,maxp.z do
+		for y = minp.y,maxp.y do
+			local vi = area:index(minp.x,y,z)
+			for x = minp.x,maxp.x do
+				if planets[nixyz] == c_air then
+				elseif planets[nixyz] ~= c_ignore then
+					data[vi] = planets[nixyz]
+				else
+					data[vi] = c_obsidian
+				end
+
+				nixyz = nixyz + 1
+				nixz = nixz + 1
+				vi = vi + 1
+			end
+			nixz = nixz - side_length
+		end
+		nixz = nixz + side_length
+	end
+	vm:set_data(data)
+	vm:set_lighting({day=0, night=0})
+	vm:calc_lighting()
+	vm:write_to_map(data)
+end)
