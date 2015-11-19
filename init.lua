@@ -160,8 +160,8 @@ local generate_points = function(sector,seed)
 		local hashed = hash_pos(pos)
 		if not seen[hashed] then
 			pos = vector_add(pos,sector_to_pos(sector))
-			local radius = prand:next(planetoids.settings.planet_sizes.minimum,
-				planetoids.settings.planet_sizes.maximum)
+			local radius = prand:next(planetoids.settings.planet_size.minimum,
+				planetoids.settings.planet_size.maximum)
 			local touching = false
 			for i,v in ipairs(points) do
 				if radius + v.radius > get_dist(pos,v.pos) then
@@ -192,27 +192,29 @@ local generate_decorated_points = function(sector,seed)
 		return planetoids.cache[hash]
 	end
 	local points,prand = generate_points(sector,seed,layer)
-	local planet_types = planetoids.planet_types
+	local planet_types = planetoids.settings.planet_types
 	for i=1,#points do
 		local point = points[i]
 		
 		--choose plaent type
 		local cum = 0
 		local ptype = prand:next(1,planet_types.rand_max)
+		local set = false
 		for i=#planet_types,1,-1 do
 			cum = planet_types[i].rarity + cum
 			if ptype < cum then
 				ptype = planet_types[i]
+				set = true
 				break
 			end
 		end
 		--If no suitable number of points is found, 1 is set as a fallback
-		if not ptype then
-			ptype = plant_types[1]
+		if not set then
+			ptype = planet_types[1]
 		end
 
 		--choose specific planet
-		local num = prand:next(1,choice.rand_max)
+		local num = prand:next(1,ptype.rand_max)
 		local set = false
 		local cum = 0
 		for i=#ptype,1,-1 do
@@ -240,7 +242,7 @@ local function point_remover(sector,comp)
 	local get_dist = planetoids.settings.get_dist
 	for index,point in ipairs(sector) do
 		for _,comp_point in ipairs(sector) do
-				local dist = get_dist(point,comp_point)
+				local dist = get_dist(point.pos,comp_point.pos)
 			if comp_point.radius + point.radius > dist then
 				point.radius = dist - comp_point.radius - 2
 				if point.radius 
@@ -310,7 +312,7 @@ local function generate_point_area(minp,maxp,seed)
 			local hash_y = (j + 32768) * 65536
 			for l=min_sector.z-1,max_sector.z+1 do
 				local hash_z = (l + 32768) * 65536 * 65536
-				sectors[hash_z + hash_y + hash_x] = generate_decorated_points({x=i,y=j,l=k},seed)
+				sectors[hash_z + hash_y + hash_x] = generate_decorated_points({x=i,y=j,z=l},seed)
 			end
 		end
 	end
@@ -318,7 +320,7 @@ local function generate_point_area(minp,maxp,seed)
 	for i=min_sector.x,max_sector.x do
 		for j=min_sector.y,max_sector.y do
 			for l=min_sector.z,max_sector.z do
-				remove_collisions({x=i,y=j,z=l},points)
+				remove_collisions({x=i,y=j,z=l},sectors)
 			end
 		end
 	end
@@ -365,7 +367,6 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 	if #points == 0 then
 		local tablesize = blocksize.x*blocksize.y*blocksize.z
 		local x,y,z = blockmin.x,blockmin.y,blockmin.z
-		local biome = point[1].biome
 		for i = 1,tablesize do
 			if x > blockmax.x then
 				x = blockmin.x
