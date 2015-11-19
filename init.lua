@@ -150,7 +150,7 @@ local generate_points = function(sector,seed)
 
 	--If no suitable number of points is found, 1 is set as a fallback
 	if not set then
-		num = 1
+		num = 0
 	end
 
 	--Generate each point

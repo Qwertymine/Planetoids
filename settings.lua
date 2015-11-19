@@ -140,12 +140,9 @@ planetoids.settings = {
 	--The number value is the minimum random number required for that value
 	--to be chosen
 	point_distribution = {
-		[1] = 20,
-		[2] = 20,
-		[3] = 20,
-		[4] = 20,
-		[5] = 20,
-		[6] = 20,
+		[0] = 80,
+		[1] = 60,
+		[2] = 40,
 	},
 	planet_size = {
 		minimum = 5,
