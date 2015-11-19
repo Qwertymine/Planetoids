@@ -86,10 +86,14 @@ local find_node = function(pos,points,dist_func)
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
 		if dist < point.radius then
-			if dist < point.radius - point.ptype.crust_thickness then
-				return point.ptype.filling_material
+			if crust_thickness then
+				if dist < point.radius - point.ptype.crust_thickness then
+					return point.ptype.filling_material
+				else
+					return point.ptype.crust_material
+				end
 			else
-				return point.ptype.crust_material
+				return point.ptype.filling_material
 			end
 		end
 	end
@@ -199,7 +203,7 @@ local generate_decorated_points = function(sector,seed)
 		
 		--choose plaent type
 		local cum = 0
-		local ptype = prand:next(1,planet_types.rand_max)
+		local ptype = prand:next(1,planet_types.rarity)
 		local set = false
 		for i=#planet_types,1,-1 do
 			cum = planet_types[i].rarity + cum
