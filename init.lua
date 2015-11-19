@@ -249,7 +249,7 @@ end
 local function point_remover(sector,comp)
 	local get_dist = planetoids.settings.get_dist
 	for index,point in ipairs(sector) do
-		for _,comp_point in ipairs(sector) do
+		for _,comp_point in ipairs(comp) do
 				local dist = get_dist(point.pos,comp_point.pos)
 			if comp_point.radius + point.radius > dist then
 				point.radius = dist - comp_point.radius - 2
