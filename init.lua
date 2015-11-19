@@ -308,11 +308,11 @@ local function generate_point_area(minp,maxp,seed)
 	local max_sector = pos_to_sector(maxp)
 	local sectors = {}
 	--populate table with sectors
-	for i=min_sector.x-1,max_sector.x+1 do
+	for i=min_sector.x-2,max_sector.x+2 do
 		local hash_x = i + 32768
-		for j=min_sector.y-1,max_sector.y+1 do
+		for j=min_sector.y-2,max_sector.y+2 do
 			local hash_y = (j + 32768) * 65536
-			for l=min_sector.z-1,max_sector.z+1 do
+			for l=min_sector.z-2,max_sector.z+2 do
 				local hash_z = (l + 32768) * 65536 * 65536
 				sectors[hash_z + hash_y + hash_x] = generate_decorated_points({x=i,y=j,z=l},seed)
 			end
