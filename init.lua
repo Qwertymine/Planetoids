@@ -679,7 +679,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 		nixz = nixz + side_length
 	end
 	vm:set_data(data)
-	vm:set_lighting({day=0, night=0})
+	vm:set_lighting({day=15, night=0})
 	vm:calc_lighting()
 	vm:write_to_map(data)
 end)
