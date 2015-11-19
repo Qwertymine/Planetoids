@@ -585,6 +585,9 @@ planetoids.configure = function()
 			if w.crust_material then
 				w.crust_material = minetest.get_content_id(w.crust_material)
 			end
+			if w.crust_top_material then
+				w.crust_top_material = minetest.get_content_id(w.crust_top_material)
+			end
 			if w.filling_material then
 				w.filling_material = minetest.get_content_id(w.filling_material)
 			end
