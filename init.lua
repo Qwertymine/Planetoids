@@ -49,6 +49,7 @@ local minetest = minetest
 local abs = math.abs
 local floor = math.floor
 local hash_pos = minetest.hash_node_position
+local air = minetest.get_content_id("air")
 
 dofile(minetest.get_modpath("planetoids").."/distance.lua")
 dofile(minetest.get_modpath("planetoids").."/maps.lua")
@@ -86,13 +87,13 @@ local find_node = function(pos,points,dist_func)
 		dist = dist_func(pos,point.pos)
 		if dist < point.radius then
 			if dist < point.radius - point.ptype.crust_thickness then
-				return point.ptype.filler
+				return point.ptype.filling_material
 			else
 				return point.ptype.crust_material
 			end
 		end
 	end
-	return "air"
+	return air
 end
 
 --block locations must start at (0,0,0)
@@ -378,7 +379,7 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 				y = blockmin.y
 				z = z + 1
 			end
-			block[i] = "air"
+			block[i] = air
 			x = x + 1
 		end
 	else
@@ -573,6 +574,14 @@ planetoids.configure = function()
 	for i,v in ipairs(set.planet_types) do
 		local inner_sum = 0
 		for j,w in ipairs(v) do
+			--change node names to node ids
+			if w.crust_material then
+				w.crust_material = minetest.get_content_id(w.crust_material)
+			end
+			if w.filling_material then
+				w.filling_material = minetest.get_content_id(w.filling_material)
+			end
+
 			inner_sum = inner_sum + w.rarity
 		end
 		v.rand_max = inner_sum
