@@ -294,7 +294,9 @@ local function remove_collisions(sector,source)
 				local hash_z = (l + 32768) * 65536 * 65536
 				if not sector_precidence(sector,comp) then
 					local comp_sector = source[hash_z + hash_y + hash_x]
-					point_remover(this_sector,comp_sector)
+					if comp_sector then
+						point_remover(this_sector,comp_sector)
+					end
 				end
 			end
 		end
@@ -317,9 +319,9 @@ local function generate_point_area(minp,maxp,seed)
 		end
 	end
 	--Remove colliding points
-	for i=min_sector.x,max_sector.x do
-		for j=min_sector.y,max_sector.y do
-			for l=min_sector.z,max_sector.z do
+	for i=min_sector.x-1,max_sector.x+1 do
+		for j=min_sector.y-1,max_sector.y+1 do
+			for l=min_sector.z-1,max_sector.z+1 do
 				remove_collisions({x=i,y=j,z=l},sectors)
 			end
 		end
