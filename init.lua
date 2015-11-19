@@ -455,30 +455,6 @@ end
 
 planetoids.experimental_3d = get_biome_map_3d_experimental
 
-local function init_maps()
-	--Setup layer maps if there are any
-	for map_index,def_table in ipairs(planetoids.settings.biome_maps) do
-		--Add layer offset to map seed offset
-		if def_table.seed_offset then
-			def_table.seed_offset = def_table.seed_offset + planetoids.settings.seed_offset
-		end
-		--Variable to contruct the final map object
-		local biome_map = nil
-		--The noise type is solely detrmined by the map_type
-		if def_table.map_type == "perlin" then
-			biome_map = {}
-			biome_map.dimensions = def_table.dimensions or 2
-			biome_map.perlin = minetest.get_perlin(def_table)
-		else
-			biome_map = planetoids.get_map_object(def_table)
-		end
-		--Replace def_table with map object
-		planetoids.settings.biome_maps[map_index] = biome_map
-	end
-	planetoids.settings.maps_init = true
-end
-
-
 --This function can be used to scale any compliant 3d map generator
 --This adds an extra overhead - but this is negligable
 local scale_3d_map_flat = function(minp,maxp,seed,map_gen,byot,scale_byot)
@@ -562,10 +538,6 @@ planetoids.get_map_flat = function(minp,maxp,seed,byot)
 		scale_byot = shared_scale_byot
 	end
 
-	if not planetoids.maps_init then
-		init_maps()
-	end
-	
 	local map_gen = get_biome_map_3d_experimental
 
 	return scale_3d_map_flat(minp,maxp,seed,map_gen,byot,scale_byot)
@@ -587,8 +559,6 @@ planetoids.configure = function(settings)
 	set.get_biome_list = function(self,to_get)
 		return self.biomes
 	end
-	--setup geometry function
-	set.dist = planetoids.geometry[set.geometry]
 
 	--setup random functions
 	local sum = 0
@@ -614,8 +584,9 @@ planetoids.configure = function(settings)
 	local length = set.planet_size.maximum * 2
 	set.sector_lengths = {x=length,y=length,z=length}
 	
+	--setup geometry function
+	set.dist = planetoids.geometry[set.geometry]
 	set.get_dist = set.dist._3d
-	set.get_dist_fast = set.dist._3d_fast or set.get_dist
 
 	--variable to track wether the noise maps have been initialised
 	if set.biome_maps then
