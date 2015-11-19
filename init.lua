@@ -206,11 +206,11 @@ local generate_decorated_points = function(sector,seed)
 		
 		--choose plaent type
 		local cum = 0
-		local ptype = prand:next(1,planet_types.rarity)
+		local ptype = prand:next(1,planet_types.rand_max)
 		local set = false
 		for i=#planet_types,1,-1 do
 			cum = planet_types[i].rarity + cum
-			if ptype < cum then
+			if ptype <= cum then
 				ptype = planet_types[i]
 				set = true
 				break
@@ -227,7 +227,7 @@ local generate_decorated_points = function(sector,seed)
 		local cum = 0
 		for i=#ptype,1,-1 do
 			cum = ptype[i].rarity + cum
-			if num < cum then
+			if num <= cum then
 				ptype = ptype[i]
 				set = true
 				break
@@ -599,7 +599,7 @@ planetoids.configure = function()
 		sum = sum + v.rarity
 	end
 
-	set.planet_types.rarity = sum
+	set.planet_types.rand_max = sum
 		
 	--setup sector lengths
 	local length = set.planet_size.maximum * 2
@@ -632,7 +632,6 @@ dofile(minetest.get_modpath("planetoids").."/settings.lua")
 
 local c_air     = minetest.get_content_id("air")
 local c_ignore  = minetest.get_content_id("ignore")
-local c_stone   = minetest.get_content_id("default:stone")
 local c_error   = minetest.get_content_id("default:obsidian")
 
 --Bring your own table for voronoi noise
@@ -667,7 +666,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				elseif planets[nixyz] ~= c_ignore then
 					data[vi] = planets[nixyz]
 				else
-					data[vi] = c_obsidian
+					data[vi] = c_error
 				end
 
 				nixyz = nixyz + 1
