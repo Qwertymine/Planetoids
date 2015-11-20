@@ -85,9 +85,9 @@ local find_node = function(pos,points,dist_func)
 	for i=1,#points do
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
-		if dist < point.radius then
+		if dist <= point.radius then
 			if point.ptype.crust_thickness then
-				if dist < point.radius - point.ptype.crust_thickness then
+				if dist <= point.radius - point.ptype.crust_thickness then
 					return point.ptype.filling_material
 				else
 					if point.ptype.crust_top_material and pos.y >= point.pos.y then
@@ -637,6 +637,8 @@ dofile(minetest.get_modpath("planetoids").."/settings.lua")
 local c_air     = minetest.get_content_id("air")
 local c_ignore  = minetest.get_content_id("ignore")
 local c_error   = minetest.get_content_id("default:obsidian")
+local c_leaves   = minetest.get_content_id("default:leaves")
+local c_tree   = minetest.get_content_id("default:tree")
 
 --Bring your own table for voronoi noise
 local planets = {}
@@ -671,6 +673,61 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					data[vi] = planets[nixyz]
 				else
 					data[vi] = c_error
+				end
+
+				nixyz = nixyz + 1
+				nixz = nixz + 1
+				vi = vi + 1
+			end
+			nixz = nixz - side_length
+		end
+		nixz = nixz + side_length
+	end
+	vm:set_data(data)
+	vm:set_lighting({day=15, night=0})
+	vm:calc_lighting()
+	vm:write_to_map(data)
+end)
+
+minetest.register_on_generated(function(minp, maxp, seed)
+	local pr = PseudoRandom(seed)
+	local max = planetoids.settings.planet_size.maximum
+	if minp.x > max or maxp.x < -max or
+	minp.z > max or maxp.z < -max or
+	minp.y > 0 or maxp.y < -2 * max then
+		return
+	end
+
+	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
+	local data = vm:get_data()
+
+	local side_length = math.abs(maxp.x - minp.x) + 1
+
+	if not map_seed then
+		map_seed = minetest.get_mapgen_params().seed
+	end
+
+	local get_dist = planetoids.settings.get_dist
+	local centre = {x=0,y=-max,z=0}
+	local pos = {x=0,y=0,z=0}
+
+	local nixyz = 1
+	local nixz = 1
+	for z = minp.z,maxp.z do
+		pos.z = z
+		for y = minp.y,maxp.y do
+			pos.y = y
+			local vi = area:index(minp.x,y,z)
+			for x = minp.x,maxp.x do
+				pos.x = x
+				local dist = get_dist(pos,centre)
+				if dist <= max then
+					if dist <= max - 2 then
+						data[vi] = c_tree
+					else
+						data[vi] = c_leaves
+					end
 				end
 
 				nixyz = nixyz + 1
