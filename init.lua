@@ -85,9 +85,9 @@ local find_node = function(pos,points,dist_func)
 	for i=1,#points do
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
-		if dist <= point.radius then
+		if dist < point.radius then
 			if point.ptype.crust_thickness then
-				if dist <= point.radius - point.ptype.crust_thickness then
+				if dist < point.radius - point.ptype.crust_thickness then
 					return point.ptype.filling_material
 				else
 					if point.ptype.crust_top_material and pos.y >= point.pos.y then
@@ -722,8 +722,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 			for x = minp.x,maxp.x do
 				pos.x = x
 				local dist = get_dist(pos,centre)
-				if dist <= max then
-					if dist <= max - 2 then
+				if dist < max then
+					if dist < max - 2 then
 						data[vi] = c_tree
 					else
 						data[vi] = c_leaves
