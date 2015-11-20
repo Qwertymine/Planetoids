@@ -70,7 +70,7 @@ local desert_sand = {
 }
 
 local soft = {
-	rarity = 4,
+	rarity = 8,
 	dirt,sand,desert_sand,
 }
 
@@ -119,7 +119,7 @@ local river_water = {
 }
 
 local glass = {
-	rarity = 1,
+	rarity = 2,
 	water,river_water,
 }
 	
@@ -150,7 +150,7 @@ planetoids.settings = {
 		minimum = 5,
 		maximum = 15,
 		--size of sector as multiple of maximum, must be > 2
-		sector_scale = 4,
+		sector_scale = 3,
 	},
 	planet_types = {
 		stone,soft,tree,glass,
