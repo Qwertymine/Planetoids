@@ -47,14 +47,14 @@ local stone = {
 }
 
 local dirt = {
-	rarity = 2,
+	rarity = 12,
 	filling_material = "default:dirt",
 	crust_thickness = 1,
 	crust_material = "default:dirt",
 	crust_top_material = "default:dirt_with_grass",
 }
 local dirt_dry = {
-	rarity = 2,
+	rarity = 4,
 	filling_material = "default:dirt",
 	crust_thickness = 1,
 	crust_material = "default:dirt",
@@ -83,14 +83,14 @@ local sand_clay = {
 	crust_material = "default:clay",
 }
 local sand_sandstone = {
-	rarity = 6,
+	rarity = 5,
 	filling_material = "default:sand",
 	crust_thickness = 1,
 	crust_top_material = "default:sand",
 	crust_material = "default:sandstone",
 }
 local desert_sand = {
-	rarity = 6,
+	rarity = 5,
 	crust_thickness = 3,
 	filling_material = "default:desert_sand",
 	crust_top_material = "default:desert_sand",
@@ -98,7 +98,7 @@ local desert_sand = {
 }
 
 local soft = {
-	rarity = 14,
+	rarity = 12,
 	dirt,sand_sandstone,sand_clay,desert_sand,
 	ice,dirt_snow,dirt_dry,
 }
@@ -286,13 +286,14 @@ planetoids.settings = {
 	},
 	--tables to add basic surface population - e.g. for long grass
 	surface_populator = {
+		enabled = true,
 		grass_pop,jungle_pop,sand_pop,stone_pop,
 		drygrass_pop,desertsand_pop,
 	},
 		
 	--how distance from the centre of a biome is judged
 	--changes he shape of generated biomes
-	geometry = "chebyshev",
+	geometry = "euclidean",
 }
 
 planetoids.configure()
