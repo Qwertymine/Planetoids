@@ -47,22 +47,50 @@ local stone = {
 }
 
 local dirt = {
-	rarity = 1,
+	rarity = 2,
 	filling_material = "default:dirt",
 	crust_thickness = 1,
 	crust_material = "default:dirt",
 	crust_top_material = "default:dirt_with_grass",
 }
+local dirt_dry = {
+	rarity = 2,
+	filling_material = "default:dirt",
+	crust_thickness = 1,
+	crust_material = "default:dirt",
+	crust_top_material = "default:dirt_with_dry_grass",
+}
+local dirt_snow = {
+	rarity = 2,
+	filling_material = "default:dirt",
+	crust_thickness = 1,
+	crust_material = "default:dirt",
+	crust_top_material = "default:dirt_with_snow",
+}
 
-local sand = {
-	rarity = 1,
+local ice = {
+	rarity = 3,
+	filling_material = "default:ice",
+	crust_thickness = 3,
+	crust_material = "default:snow",
+}
+
+local sand_clay = {
+	rarity = 3,
+	filling_material = "default:sand",
+	crust_thickness = 4,
+	crust_top_material = "default:sand",
+	crust_material = "default:clay",
+}
+local sand_sandstone = {
+	rarity = 6,
 	filling_material = "default:sand",
 	crust_thickness = 1,
 	crust_top_material = "default:sand",
 	crust_material = "default:sandstone",
 }
 local desert_sand = {
-	rarity = 1,
+	rarity = 6,
 	crust_thickness = 1,
 	filling_material = "default:desert_sand",
 	crust_top_material = "default:desert_sand",
@@ -70,8 +98,9 @@ local desert_sand = {
 }
 
 local soft = {
-	rarity = 8,
-	dirt,sand,desert_sand,
+	rarity = 14,
+	dirt,sand_sandstone,sand_clay,desert_sand,
+	ice,dirt_snow,dirt_dry,
 }
 
 local normal_tree = {
@@ -122,8 +151,108 @@ local glass = {
 	rarity = 2,
 	water,river_water,
 }
+
+--basic populator tables
+local red_flower = {
+	node = "flowers:rose",
+	rarity = 1,
+}
+local blue_flower = {
+	node = "flowers:geranium",
+	rarity = 1,
+}
+local yellow_flower = {
+	node = "flowers:dandelion_yellow",
+	rarity = 1,
+}
+local white_flower = {
+	node = "flowers:dandelion_white",
+	rarity = 1,
+}
+local purple_flower = {
+	node = "flowers:viola",
+	rarity = 1,
+}
+local orange_flower = {
+	node = "flowers:tulip",
+	rarity = 1,
+}
+local long_grass = {
+	node = "default:grass_5",
+	rarity = 15,
+}
+
+local grass_pop = {
+	node = "default:grass",
+	population_chance = 0.5,
+	red_flower,green_flower,blue_flower,yellow_flower,white_flower,
+	purple_flower,orange_flower,long_grass,
+}
+
+
+local jungle_grass = {
+	node = "default:junglegrass",
+	rarity = 1,
+}
+
+local jungle_pop = {
+	node = "default:jungleleaves",
+	population_chance = 0.2,
+	jungle_grass,
+}
+
+
+local reeds = {
+	node = "default:papyrus",
+	rarity = 5,
+}
+
+local sand_pop = {
+	node = "default:sand",
+	population_chance = 0.1,
+	reeds,long_grass,
+}
 	
+local reeds = {
+	node = "default:dry_shrub",
+	rarity = 1,
+}
+
+local desertsand_pop = {
+	node = "default:desert_sand",
+	population_chance = 0.1,
+	dry_shrub,
+}
+
+
+local red_shroom = {
+	node = "flowers:mushroom_red",
+	rarity = 1,
+}
+
+local brown_shroom = {
+	node = "flower:mushroom_brown",
+	rarity = 1,
+}
+
+local stone_pop = {
+	node = "default:stone",
+	population_chance = 0.1,
+	brown_shroom,red_shroom,
+}
 	
+
+local drygrass = {
+	node = "default:dry_grass_5",
+	rarity = 15,
+}
+
+local drygrass_pop = {
+	node = "default:grass",
+	population_chance = 0.5,
+	drygrass,
+}
+
 planetoids.settings = {
 	--a number added to the world seed to amke different noises
 	seed_offset = 5,
@@ -155,9 +284,15 @@ planetoids.settings = {
 	planet_types = {
 		stone,soft,tree,glass,
 	},
+	--tables to add basic surface population - e.g. for long grass
+	surface_populator = {
+		grass_pop,jungle_pop,sand_pop,stone_pop,
+		drygrass_pop,desertsand_pop,
+	}
+		
 	--how distance from the centre of a biome is judged
 	--changes he shape of generated biomes
-	geometry = "euclidean",
+	geometry = "chebyshev",
 }
 
 planetoids.configure()

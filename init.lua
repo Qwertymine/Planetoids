@@ -577,6 +577,23 @@ planetoids.configure = function()
 	end
 	set.point_distribution.rand_max = sum
 
+	--setup surface population table
+	set.pop = {}
+	for _,node_table in ipairs(set.surface_populator) do
+		local inner_sum = 0
+		for _,rep_table in ipairs(node_table) do
+				--change node names to node ids
+				rep_table.node = minetest.get_content_id(rep_table.node)
+
+				inner_sum = inner_sum + rep_table.rarity
+		end
+
+		node_table.rand_max = inner_sum
+		node_table.rarity = node_table.population_chance * 10000
+		set.pop[minetest.get_content_id(node_table.node)] = node_table
+	end
+
+
 	sum = 0
 	for i,v in ipairs(set.planet_types) do
 		local inner_sum = 0
@@ -600,7 +617,6 @@ planetoids.configure = function()
 	end
 
 	set.planet_types.rand_max = sum
-		
 	--setup scale factor
 	if set.planet_size.sector_scale < 2 then
 		set.planet_size.sector_scale = 2
@@ -643,6 +659,9 @@ local c_tree   = minetest.get_content_id("default:tree")
 --Bring your own table for voronoi noise
 local planets = {}
 
+
+
+
 minetest.register_on_generated(function(minp, maxp, seed)
 	local pr = PseudoRandom(seed)
 
@@ -661,6 +680,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 
 	local planets = planets
 	planets = planetoids.get_map_flat(minp,maxp,map_seed,planets)
+	local set = planetoids.settings
 
 	local nixyz = 1
 	local nixz = 1
@@ -671,6 +691,19 @@ minetest.register_on_generated(function(minp, maxp, seed)
 				if planets[nixyz] == c_air then
 				elseif planets[nixyz] ~= c_ignore then
 					data[vi] = planets[nixyz]
+					--simple population
+					local pop = set.pop[planets[nixyz]]
+					if pop and planets[nixyz-side_length] == c_air and math.random(1,10000) < pop.rarity then
+						local num = math.random(1,pop.rand_max)
+						local cum = 0
+						for i=#pop,1,-1 do
+							cum = pop[i].rarity + cum
+							if num <= cum then
+								data[area:index(x,y+1,z)] = pop[i].node
+								break
+							end
+						end
+					end
 				else
 					data[vi] = c_error
 				end
