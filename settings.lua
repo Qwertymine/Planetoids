@@ -91,7 +91,7 @@ local sand_sandstone = {
 }
 local desert_sand = {
 	rarity = 6,
-	crust_thickness = 1,
+	crust_thickness = 3,
 	filling_material = "default:desert_sand",
 	crust_top_material = "default:desert_sand",
 	crust_material = "default:desert_stone",
@@ -183,7 +183,7 @@ local long_grass = {
 }
 
 local grass_pop = {
-	node = "default:grass",
+	node = "default:dirt_with_grass",
 	population_chance = 0.5,
 	red_flower,green_flower,blue_flower,yellow_flower,white_flower,
 	purple_flower,orange_flower,long_grass,
@@ -197,7 +197,7 @@ local jungle_grass = {
 
 local jungle_pop = {
 	node = "default:jungleleaves",
-	population_chance = 0.2,
+	population_chance = 0.08,
 	jungle_grass,
 }
 
@@ -213,7 +213,7 @@ local sand_pop = {
 	reeds,long_grass,
 }
 	
-local reeds = {
+local dry_shrub = {
 	node = "default:dry_shrub",
 	rarity = 1,
 }
@@ -231,13 +231,13 @@ local red_shroom = {
 }
 
 local brown_shroom = {
-	node = "flower:mushroom_brown",
+	node = "flowers:mushroom_brown",
 	rarity = 1,
 }
 
 local stone_pop = {
 	node = "default:stone",
-	population_chance = 0.1,
+	population_chance = 0.01,
 	brown_shroom,red_shroom,
 }
 	
@@ -248,8 +248,8 @@ local drygrass = {
 }
 
 local drygrass_pop = {
-	node = "default:grass",
-	population_chance = 0.5,
+	node = "default:dirt_with_dry_grass",
+	population_chance = 0.3,
 	drygrass,
 }
 
