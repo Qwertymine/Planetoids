@@ -72,7 +72,7 @@ local ice = {
 	rarity = 3,
 	filling_material = "default:ice",
 	crust_thickness = 3,
-	crust_material = "default:snow",
+	crust_material = "default:snowblock",
 }
 
 local sand_clay = {
@@ -288,7 +288,7 @@ planetoids.settings = {
 	surface_populator = {
 		grass_pop,jungle_pop,sand_pop,stone_pop,
 		drygrass_pop,desertsand_pop,
-	}
+	},
 		
 	--how distance from the centre of a biome is judged
 	--changes he shape of generated biomes
