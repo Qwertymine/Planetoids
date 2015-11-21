@@ -693,7 +693,8 @@ minetest.register_on_generated(function(minp, maxp, seed)
 					data[vi] = planets[nixyz]
 					--simple population
 					local pop = set.pop[planets[nixyz]]
-					if set.pop.enabled and pop and y < maxp.y and planets[nixyz+side_length] == c_air 
+					if set.surface_populator.enabled and pop and y < maxp.y 
+					and planets[nixyz+side_length] == c_air 
 					and math.random(1,10000) < pop.rarity then
 						local num = math.random(1,pop.rand_max)
 						local cum = 0

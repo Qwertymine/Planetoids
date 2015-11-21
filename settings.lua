@@ -5,13 +5,13 @@ local coal = {
 	filling_material = "default:stone_with_coal",
 }
 local lava = {
-	rarity = 15,
+	rarity = 20,
 	crust_material = "default:stone",
 	crust_thickness = 2,
 	filling_material = "default:lava_source",
 }
 local iron = {
-	rarity = 5,
+	rarity = 7,
 	crust_material = "default:stone",
 	crust_thickness = 2,
 	filling_material = "default:stone_with_iron",
@@ -179,13 +179,13 @@ local orange_flower = {
 }
 local long_grass = {
 	node = "default:grass_5",
-	rarity = 15,
+	rarity = 30,
 }
 
 local grass_pop = {
 	node = "default:dirt_with_grass",
 	population_chance = 0.5,
-	red_flower,green_flower,blue_flower,yellow_flower,white_flower,
+	red_flower,blue_flower,yellow_flower,white_flower,
 	purple_flower,orange_flower,long_grass,
 }
 
@@ -205,6 +205,11 @@ local jungle_pop = {
 local reeds = {
 	node = "default:papyrus",
 	rarity = 5,
+}
+
+local long_grass = {
+	node = "default:grass_5",
+	rarity = 15,
 }
 
 local sand_pop = {
