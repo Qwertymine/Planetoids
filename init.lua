@@ -255,7 +255,7 @@ local function point_remover(sector,comp)
 				point.radius = dist - comp_point.radius - 2
 				if point.radius 
 				< planetoids.settings.planet_size.minimum then
-					table.remove(sector,index)
+					point.radius = -math.huge
 				end
 			end
 		end
