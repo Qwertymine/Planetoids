@@ -580,8 +580,10 @@ planetoids.configure = function()
 
 	--setup random functions
 	local sum = 0
-	for i,v in ipairs(set.point_distribution) do
-		sum = sum + v
+	for i=#point_dist,0,-1 do
+		if point_dist[i] then
+			sum = point_dist[i] + sum
+		end
 	end
 	set.point_distribution.rand_max = sum
 
