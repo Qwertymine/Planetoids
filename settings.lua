@@ -19,6 +19,7 @@ planetoids.settings = {
 	--to be chosen
 	point_distribution = {
 		default = 1,
+		[0] = 0,
 		[1] = 60,
 		[2] = 40,
 		[3] = 40,

@@ -139,12 +139,14 @@ local generate_points = function(sector,seed)
 	local num = prand:next(1,point_dist.rand_max)
 	local set = false
 	local cum = 0
-	for i=#point_dist,1,-1 do
-		cum = point_dist[i] + cum
-		if num <= cum then
-			num = i
-			set = true
-			break
+	for i=#point_dist,0,-1 do
+		if point_dist[i] then
+			cum = point_dist[i] + cum
+			if num <= cum then
+				num = i
+				set = true
+				break
+			end
 		end
 	end
 
