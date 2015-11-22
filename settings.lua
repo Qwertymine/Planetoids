@@ -220,13 +220,17 @@ local sand_pop = {
 	
 local dry_shrub = {
 	node = "default:dry_shrub",
+	rarity = 10,
+}
+local cactus = {
+	node = "default:cactus",
 	rarity = 1,
 }
 
 local desertsand_pop = {
 	node = "default:desert_sand",
 	population_chance = 0.1,
-	dry_shrub,
+	dry_shrub,cactus
 }
 
 
