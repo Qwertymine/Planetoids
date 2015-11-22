@@ -580,6 +580,7 @@ planetoids.configure = function()
 
 	--setup random functions
 	local sum = 0
+	local point_dist = set.point_distribution
 	for i=#point_dist,0,-1 do
 		if point_dist[i] then
 			sum = point_dist[i] + sum
