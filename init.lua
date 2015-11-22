@@ -260,6 +260,12 @@ local function point_remover(sector,comp)
 			end
 		end
 	end
+	--remove all invalid points
+	for index=#sector,1,-1 do
+		while (sector[index] and sector[index].radius == -math.huge) do
+			table.remove(sector,index)
+		end
+	end
 end
 
 --returns true is sector has a higher precience than comp
