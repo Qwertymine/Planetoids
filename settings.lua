@@ -40,10 +40,17 @@ local gravel = {
 	crust_thickness = 2,
 	filling_material = "default:gravel",
 }
+local mossy_cobble = {
+	rarity = 1,
+	crust_material = "default:mossycobble",
+	crust_thickness = 4,
+	filling_material = "default:lava_source",
+}
 
 local stone = {
 	rarity = 10,
 	coal,lava,iron,copper,diamond,mese,gravel,
+	mossy_cobble,
 }
 
 local dirt = {
