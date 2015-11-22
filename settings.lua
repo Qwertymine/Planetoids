@@ -26,10 +26,10 @@ planetoids.settings = {
 		[4] = 40,
 	},
 	planet_size = {
-		minimum = 50,
-		maximum = 150,
+		minimum = 5,
+		maximum = 15,
 		--size of sector as multiple of maximum, must be > 2
-		sector_scale = 2,
+		sector_scale = 3,
 	},
 	planet_types = {
 		planets.stone,planets.soft,planets.tree,planets.glass,
