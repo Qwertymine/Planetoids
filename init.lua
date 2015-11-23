@@ -79,24 +79,28 @@ local pos_to_sector = function(pos)
 	return sector
 end
 
-local find_node = function(pos,points,dist_func)
+local find_node = function(pos,points,dist_func,perlin)
 	local dist = nil
 	local node = nil
 	for i=1,#points do
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
 		if dist < point.radius then
-			if point.ptype.crust_thickness then
-				if dist < point.radius - point.ptype.crust_thickness then
-					return point.ptype.filling_material
-				else
-					if point.ptype.crust_top_material and pos.y >= point.pos.y then
-						return point.ptype.crust_top_material
+			local norm_dist = dist*2/point.radius
+			local noise = perlin - norm_dist
+			if noise > planetoids.settings.threshold then
+				if point.ptype.crust_thickness then
+					if dist < point.radius - point.ptype.crust_thickness then
+						return point.ptype.filling_material
+					else
+						if point.ptype.crust_top_material and pos.y >= point.pos.y then
+							return point.ptype.crust_top_material
+						end
+						return point.ptype.crust_material
 					end
-					return point.ptype.crust_material
+				else
+					return point.ptype.filling_material
 				end
-			else
-				return point.ptype.filling_material
 			end
 		end
 	end

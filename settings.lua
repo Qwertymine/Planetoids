@@ -52,6 +52,7 @@ planetoids.settings = {
 		seeddiff = 5349,
 		spread = {x=10,y=10,z=10},
 	},
+	threshold = 0,
 }
 
 planetoids.configure()
