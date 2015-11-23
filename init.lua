@@ -398,8 +398,10 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 			x = x + 1
 		end
 	else
+		local perlin_map = planetoids.perlin:get3dMap_flat(blockmin)
 		local tablesize = blocksize.x*blocksize.y*blocksize.z
 		local x,y,z = blockmin.x,blockmin.y,blockmin.z
+		local nixyz = 1
 		for i = 1,tablesize do
 			if x > blockmax.x then
 				x = blockmin.x
@@ -410,8 +412,9 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 				z = z + 1
 			end
 			block[i] = find_node({x=x,y=y,z=z}
-				,points,get_dist)
+				,points,get_dist,perlin_map[nixyz])
 			x = x + 1
+			nixyz = nixyz + 1
 		end
 	end
 	return block
@@ -421,7 +424,7 @@ local shared_block_byot = {}
 
 local function init_maps(minp,maxp)
 	local side_length = maxp.x-minp.x+1
-	planetoids.perlin = minetest.get_perlin_map(planetoids.settings.perlin_map,{x=side_length,y=side_length,z=side_length})
+	planetoids.perlin = minetest.get_perlin_map(planetoids.settings.perlin_map,planetoids.settings.blocksize)
 end
 
 --map is generated in blocks
