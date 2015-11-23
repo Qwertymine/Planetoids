@@ -86,11 +86,11 @@ local find_node = function(pos,points,dist_func,perlin)
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
 		if dist < point.radius then
-			local norm_dist = dist*2/point.radius
+			local norm_dist = (dist*2)/point.radius - 1
 			local noise = perlin - norm_dist
 			if noise > planetoids.settings.threshold then
 				if point.ptype.crust_thickness then
-					if dist < point.radius - point.ptype.crust_thickness then
+					if noise - point.ptype.crust_thickness/point.radius > planetoids.settings.threshold then
 						return point.ptype.filling_material
 					else
 						if point.ptype.crust_top_material and pos.y >= point.pos.y then
@@ -435,7 +435,7 @@ end
 --this allows for distance testing to reduce the number of points to test
 local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
 	if not planetoids.perlin then
-		init_maps()
+		init_maps(minp,maxp)
 	end
 	--normal block size
 	local blsize = planetoids.settings.blocksize or {x=5,y=5,z=5}
