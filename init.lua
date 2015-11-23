@@ -419,8 +419,9 @@ end
 
 local shared_block_byot = {}
 
-local function init_maps()
-	planetoids.perlin = minetest.get_perlin(planetoids.settings.perlin_map)
+local function init_maps(minp,maxp)
+	local side_length = maxp.x-minp.x+1
+	planetoids.perlin = minetest.get_perlin_map(planetoids.settings.perlin_map,{x=side_length,y=side_length,z=side_length})
 end
 
 --map is generated in blocks
