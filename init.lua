@@ -419,6 +419,10 @@ end
 
 local shared_block_byot = {}
 
+local function init_maps()
+	planetoids.perlin = minetest.get_perlin(planetoids.settings.perlin_map)
+end
+
 --map is generated in blocks
 --this allows for distance testing to reduce the number of points to test
 local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
