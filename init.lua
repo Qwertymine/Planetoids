@@ -426,6 +426,9 @@ end
 --map is generated in blocks
 --this allows for distance testing to reduce the number of points to test
 local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
+	if not planetoids.perlin then
+		init_maps()
+	end
 	--normal block size
 	local blsize = planetoids.settings.blocksize or {x=5,y=5,z=5}
 	local halfsize = {x=blsize.x/2,y=blsize.y/2,z=blsize.z/2}

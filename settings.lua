@@ -43,6 +43,15 @@ planetoids.settings = {
 	--how distance from the centre of a biome is judged
 	--changes he shape of generated biomes
 	geometry = "euclidean",
+	perlin_map = {
+		flags = nil,
+		lacunarity = 2,
+		octaves = 3,
+		persistence = 0.5,
+		scale = 1,
+		seeddiff = 5349,
+		spread = {x=10,y=10,z=10},
+	},
 }
 
 planetoids.configure()
