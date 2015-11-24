@@ -25,10 +25,10 @@ planetoids.settings = {
 		[4] = 40,
 	},
 	planet_size = {
-		minimum = 5,
-		maximum = 15,
+		minimum = 15,
+		maximum = 30,
 		--size of sector as multiple of maximum, must be > 2
-		sector_scale = 3,
+		sector_scale = 2,
 	},
 	planet_types = {
 		planets.stone,planets.soft,planets.tree,planets.glass,
@@ -44,11 +44,10 @@ planetoids.settings = {
 	--changes he shape of generated biomes
 	geometry = "euclidean",
 	perlin_map = {
-		flags = nil,
-		lacunarity = 2,
-		octaves = 3,
+		lacunarity = 1.4,
+		octaves = 2,
 		persistence = 0.5,
-		scale = 1,
+		scale = 0.6,
 		seeddiff = 5349,
 		spread = {x=10,y=10,z=10},
 	},
