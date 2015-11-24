@@ -47,6 +47,7 @@ planetoids.settings = {
 		lacunarity = 1.4,
 		octaves = 2,
 		persistence = 0.5,
+		--reduce to reduce effect of noise, max 1
 		scale = 0.6,
 		seeddiff = 5349,
 		spread = {x=10,y=10,z=10},
