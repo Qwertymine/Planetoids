@@ -169,6 +169,7 @@ local generate_points = function(sector,seed)
 	--Generate each point
 	local seen = {}
 	local points = {}
+	local overlap = planetoids.settings.overlap_distance or 0
 	while num > 0 do
 		--The points are aligned to 0.1 of a block
 		--This used to be to 1 block, but having multiple points at
@@ -185,7 +186,7 @@ local generate_points = function(sector,seed)
 				planetoids.settings.planet_size.maximum)
 			local touching = false
 			for i,v in ipairs(points) do
-				if radius + v.radius > get_dist(pos,v.pos) then
+				if radius + v.radius - overlap > get_dist(pos,v.pos) then
 					touching = true
 					break
 				end
@@ -263,11 +264,12 @@ end
 --tries to shrink first
 local function point_remover(sector,comp)
 	local get_dist = planetoids.settings.get_dist
+	local overlap = planetoids.settings.overlap_distance or 0
 	for index,point in ipairs(sector) do
 		for _,comp_point in ipairs(comp) do
 				local dist = get_dist(point.pos,comp_point.pos)
-			if comp_point.radius + point.radius > dist then
-				point.radius = dist - comp_point.radius - 2
+			if comp_point.radius + point.radius - overlap > dist then
+				point.radius = dist + overlap - comp_point.radius - 2
 				if point.radius 
 				< planetoids.settings.planet_size.minimum then
 					point.radius = -math.huge
