@@ -56,9 +56,6 @@ planetoids.settings = {
 	--crust thickness is made thinner by randomness of perlin noise  -this
 	--setting is added to all crust thicknesses in calculations
 	thickness_offset = 1,
-	--perlin planetoids are smaller than their maximum size, this setting
-	--allows for some overlap to be added to counter that
-	overlap_distance = 5,
 }
 
 planetoids.configure()

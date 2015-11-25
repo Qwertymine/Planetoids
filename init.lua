@@ -79,6 +79,41 @@ local pos_to_sector = function(pos)
 	return sector
 end
 
+local find_node_perlin = function(pos,points,dist_func,perlin)
+	local dist = nil
+	local node = nil
+	local set = planetoids.settings
+	for i=1,#points do
+		local point = points[i]
+		dist = dist_func(pos,point.pos)
+		if dist >= point.radius then
+			return air
+		end
+		
+		local norm_dist = (dist*2)/point.radius - 1
+		local noise = perlin - norm_dist
+		if noise <= set.threshold then
+			return air
+		end
+
+		if point.ptype.crust_thickness then
+			local norm_crust = ((point.ptype.crust_thickness 
+				+ set.thickness_offset)*2)/point.radius
+			if noise - norm_crust > set.threshold then
+				return point.ptype.filling_material
+			elseif point.ptype.crust_top_material 
+			and pos.y >= point.pos.y then
+				return point.ptype.crust_top_material
+			else
+				return point.ptype.crust_material
+			end
+		else
+			return point.ptype.filling_material
+		end
+	end
+	return air
+end
+
 local find_node = function(pos,points,dist_func,perlin)
 	local dist = nil
 	local node = nil
@@ -169,7 +204,6 @@ local generate_points = function(sector,seed)
 	--Generate each point
 	local seen = {}
 	local points = {}
-	local overlap = planetoids.settings.overlap_distance or 0
 	while num > 0 do
 		--The points are aligned to 0.1 of a block
 		--This used to be to 1 block, but having multiple points at
@@ -186,7 +220,7 @@ local generate_points = function(sector,seed)
 				planetoids.settings.planet_size.maximum)
 			local touching = false
 			for i,v in ipairs(points) do
-				if radius + v.radius - overlap > get_dist(pos,v.pos) then
+				if radius + v.radius > get_dist(pos,v.pos) then
 					touching = true
 					break
 				end
@@ -264,12 +298,11 @@ end
 --tries to shrink first
 local function point_remover(sector,comp)
 	local get_dist = planetoids.settings.get_dist
-	local overlap = planetoids.settings.overlap_distance or 0
 	for index,point in ipairs(sector) do
 		for _,comp_point in ipairs(comp) do
 				local dist = get_dist(point.pos,comp_point.pos)
-			if comp_point.radius + point.radius - overlap > dist then
-				point.radius = dist + overlap - comp_point.radius - 2
+			if comp_point.radius + point.radius > dist then
+				point.radius = dist - comp_point.radius - 2
 				if point.radius 
 				< planetoids.settings.planet_size.minimum then
 					point.radius = -math.huge
@@ -412,7 +445,7 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 			block[i] = air
 			x = x + 1
 		end
-	else
+	elseif planetoids.perlin then
 		local perlin_map = planetoids.perlin:get3dMap_flat(blockmin)
 		local tablesize = blocksize.x*blocksize.y*blocksize.z
 		local x,y,z = blockmin.x,blockmin.y,blockmin.z
@@ -426,10 +459,26 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 				y = blockmin.y
 				z = z + 1
 			end
-			block[i] = find_node({x=x,y=y,z=z}
+			block[i] = find_node_perlin({x=x,y=y,z=z}
 				,points,get_dist,perlin_map[nixyz])
 			x = x + 1
 			nixyz = nixyz + 1
+		end
+	else
+		local tablesize = blocksize.x*blocksize.y*blocksize.z
+		local x,y,z = blockmin.x,blockmin.y,blockmin.z
+		for i = 1,tablesize do
+			if x > blockmax.x then
+				x = blockmin.x
+				y = y + 1
+			end
+			if y > blockmax.y then
+				y = blockmin.y
+				z = z + 1
+			end
+			block[i] = find_node({x=x,y=y,z=z}
+				,points,get_dist)
+			x = x + 1
 		end
 	end
 	return block
