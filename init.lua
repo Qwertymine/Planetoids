@@ -86,29 +86,28 @@ local find_node_perlin = function(pos,points,dist_func,perlin)
 	for i=1,#points do
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
-		if dist >= point.radius then
-			return air
-		end
-		
-		local norm_dist = (dist*2)/point.radius - 1
-		local noise = perlin - norm_dist
-		if noise <= set.threshold then
-			return air
-		end
-
-		if point.ptype.crust_thickness then
-			local norm_crust = ((point.ptype.crust_thickness 
-				+ set.thickness_offset)*2)/point.radius
-			if noise - norm_crust > set.threshold then
-				return point.ptype.filling_material
-			elseif point.ptype.crust_top_material 
-			and pos.y >= point.pos.y then
-				return point.ptype.crust_top_material
-			else
-				return point.ptype.crust_material
+		if dist < point.radius then
+			
+			local norm_dist = (dist*2)/point.radius - 1
+			local noise = perlin - norm_dist
+			if noise <= set.threshold then
+				return air
 			end
-		else
-			return point.ptype.filling_material
+
+			if point.ptype.crust_thickness then
+				local norm_crust = ((point.ptype.crust_thickness 
+					+ set.thickness_offset)*2)/point.radius
+				if noise - norm_crust > set.threshold then
+					return point.ptype.filling_material
+				elseif point.ptype.crust_top_material 
+				and pos.y >= point.pos.y then
+					return point.ptype.crust_top_material
+				else
+					return point.ptype.crust_material
+				end
+			else
+				return point.ptype.filling_material
+			end
 		end
 	end
 	return air
@@ -120,21 +119,19 @@ local find_node = function(pos,points,dist_func)
 	for i=1,#points do
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
-		if dist >= point.radius then
-			return air
-		end
-
-		if point.ptype.crust_thickness then
-			if dist < point.radius - point.ptype.crust_thickness then
-				return point.ptype.filling_material
-			elseif point.ptype.crust_top_material 
-			and pos.y >= point.pos.y then
-				return point.ptype.crust_top_material
+		if dist < point.radius then
+			if point.ptype.crust_thickness then
+				if dist < point.radius - point.ptype.crust_thickness then
+					return point.ptype.filling_material
+				elseif point.ptype.crust_top_material 
+				and pos.y >= point.pos.y then
+					return point.ptype.crust_top_material
+				else
+					return point.ptype.crust_material
+				end
 			else
-				return point.ptype.crust_material
+				return point.ptype.filling_material
 			end
-		else
-			return point.ptype.filling_material
 		end
 	end
 	return air
