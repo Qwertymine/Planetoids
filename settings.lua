@@ -3,8 +3,6 @@ dofile(minetest.get_modpath("planetoids").."/populator.lua")
 local planets = planetoids.planets
 local pop = planetoids.populator
 planetoids.settings = {
-	--a number added to the world seed to amke different noises
-	seed_offset = 5,
 	--scale to multiply the noise by(for performace)
 	--if not a factor of 80, there may be some artifacting at the edge
 	--of voxel manip blocks
