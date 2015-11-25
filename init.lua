@@ -90,9 +90,7 @@ local find_node = function(pos,points,dist_func,perlin)
 			local noise = perlin - norm_dist
 			if noise > planetoids.settings.threshold then
 				if point.ptype.crust_thickness then
-					--3 is used rather than correct correction of 2 to counter the cumulative effect of
-					--noise values dropping and distance increaseing at the same time
-					if noise - (point.ptype.crust_thickness*3)/point.radius > planetoids.settings.threshold then
+					if noise - (point.ptype.crust_thickness*2)/point.radius > planetoids.settings.threshold then
 						return point.ptype.filling_material
 					else
 						if point.ptype.crust_top_material and pos.y >= point.pos.y then
