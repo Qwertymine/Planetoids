@@ -10,12 +10,9 @@ planetoids.settings = {
 	--This sets the size of the blocks that it generates, performance
 	--improves with size only for smaller sizes: 1^3 < small > 80^3
 	blocksize = {x=5,y=5,z=5},
-	--This is the distribution of how many points are generated in each
-	--sector
-	--The index is the number of points - these MUST be continuous
-	--The number value is the minimum random number required for that value
-	--to be chosen
+
 	mode = "normal",
+
 	point_distribution = {
 		default = 1,
 		[1] = 60,
