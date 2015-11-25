@@ -79,25 +79,62 @@ local pos_to_sector = function(pos)
 	return sector
 end
 
+local find_node_perlin = function(pos,points,dist_func,perlin)
+	local dist = nil
+	local node = nil
+	local set = planetoids.settings
+	for i=1,#points do
+		local point = points[i]
+		dist = dist_func(pos,point.pos)
+		if dist >= point.radius then
+			return air
+		end
+		
+		local norm_dist = (dist*2)/point.radius - 1
+		local noise = perlin - norm_dist
+		if noise <= set.threshold then
+			return air
+		end
+
+		if point.ptype.crust_thickness then
+			local norm_crust = ((point.ptype.crust_thickness 
+				+ set.thickness_offset)*2)/point.radius
+			if noise - norm_crust > set.threshold then
+				return point.ptype.filling_material
+			elseif point.ptype.crust_top_material 
+			and pos.y >= point.pos.y then
+				return point.ptype.crust_top_material
+			else
+				return point.ptype.crust_material
+			end
+		else
+			return point.ptype.filling_material
+		end
+	end
+	return air
+end
+
 local find_node = function(pos,points,dist_func)
 	local dist = nil
 	local node = nil
 	for i=1,#points do
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
-		if dist < point.radius then
-			if point.ptype.crust_thickness then
-				if dist < point.radius - point.ptype.crust_thickness then
-					return point.ptype.filling_material
-				else
-					if point.ptype.crust_top_material and pos.y >= point.pos.y then
-						return point.ptype.crust_top_material
-					end
-					return point.ptype.crust_material
-				end
-			else
+		if dist >= point.radius then
+			return air
+		end
+
+		if point.ptype.crust_thickness then
+			if dist < point.radius - point.ptype.crust_thickness then
 				return point.ptype.filling_material
+			elseif point.ptype.crust_top_material 
+			and pos.y >= point.pos.y then
+				return point.ptype.crust_top_material
+			else
+				return point.ptype.crust_material
 			end
+		else
+			return point.ptype.filling_material
 		end
 	end
 	return air
@@ -353,7 +390,6 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 	local points = {}
 	local block = byot or {}
 	local index = 1
-	local geo = planetoids.settings.geometry
 	local blockmax = {x=blockmin.x+(blocksize.x-1),y=blockmin.y+(blocksize.y -1)
 		,z=blockmin.z+(blocksize.z-1)}
 	local sector = pos_to_sector(blockcentre)
@@ -399,6 +435,25 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 			block[i] = air
 			x = x + 1
 		end
+	elseif planetoids.settings.mode == "perlin" then
+		local perlin_map = planetoids.perlin:get3dMap_flat(blockmin)
+		local tablesize = blocksize.x*blocksize.y*blocksize.z
+		local x,y,z = blockmin.x,blockmin.y,blockmin.z
+		local nixyz = 1
+		for i = 1,tablesize do
+			if x > blockmax.x then
+				x = blockmin.x
+				y = y + 1
+			end
+			if y > blockmax.y then
+				y = blockmin.y
+				z = z + 1
+			end
+			block[i] = find_node_perlin({x=x,y=y,z=z}
+				,points,get_dist,perlin_map[nixyz])
+			x = x + 1
+			nixyz = nixyz + 1
+		end
 	else
 		local tablesize = blocksize.x*blocksize.y*blocksize.z
 		local x,y,z = blockmin.x,blockmin.y,blockmin.z
@@ -421,9 +476,21 @@ end
 
 local shared_block_byot = {}
 
+local function init_maps(minp,maxp)
+	local side_length = maxp.x-minp.x+1
+	planetoids.perlin = minetest.get_perlin_map(planetoids.settings.perlin_map,planetoids.settings.blocksize)
+end
+
 --map is generated in blocks
 --this allows for distance testing to reduce the number of points to test
 local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
+	if not planetoids.perlin then
+		if planetoids.settings.mode == "perlin" then
+			init_maps(minp,maxp)
+		else
+			planetoids.perlin = true
+		end
+	end
 	--normal block size
 	local blsize = planetoids.settings.blocksize or {x=5,y=5,z=5}
 	local halfsize = {x=blsize.x/2,y=blsize.y/2,z=blsize.z/2}
@@ -677,7 +744,7 @@ local map_seed
 
 minetest.register_on_generated(function(minp, maxp, seed)
 	local pr = PseudoRandom(seed)
-	local time_start = os.clock()
+	--local time_start = os.clock()
 
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
@@ -732,7 +799,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 		end
 		nixz = nixz + side_length
 	end
-	minetest.debug(os.clock() - time_start)
+	--minetest.debug(os.clock() - time_start)
 	vm:set_data(data)
 	vm:set_lighting({day=15, night=0})
 	vm:calc_lighting()

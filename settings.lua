@@ -17,9 +17,9 @@ planetoids.settings = {
 	--The index is the number of points - these MUST be continuous
 	--The number value is the minimum random number required for that value
 	--to be chosen
+	mode = "perlin",
 	point_distribution = {
 		default = 1,
-		[0] = 0,
 		[1] = 60,
 		[2] = 40,
 		[3] = 40,
@@ -45,5 +45,27 @@ planetoids.settings = {
 	--changes he shape of generated biomes
 	geometry = "euclidean",
 }
+
+--perlin specific settings
+if planetoids.settings.mode == "perlin" then
+	planetoids.settings.planet_size = {
+		minimum = 15,
+		maximum = 30,
+		--size of sector as multiple of maximum, must be > 2
+		sector_scale = 2,
+	}
+	planetoids.settings.perlin_map = {
+		lacunarity = 1.4,
+		octaves = 2,
+		persistence = 0.5,
+		--reduce to reduce effect of noise, max 1
+		scale = 0.6,
+		seeddiff = 5349,
+		spread = {x=10,y=10,z=10},
+	}
+	planetoids.settings.threshold = 0
+	planetoids.settings.thickness_offset = 1
+end
+
 
 planetoids.configure()
