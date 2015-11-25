@@ -198,9 +198,11 @@ local generate_decorated_points = function(sector,seed)
 	local hash = hash_pos(sector)
 	--This is a cache for storing points that were already generated
 	--this should improve performance - but profiling breaks it
+	--[[
 	if planetoids.cache[hash] then
 		return planetoids.cache[hash]
 	end
+	--]]
 	local points,prand = generate_points(sector,seed,layer)
 	local planet_types = planetoids.settings.planet_types
 	for i=1,#points do
@@ -242,7 +244,7 @@ local generate_decorated_points = function(sector,seed)
 
 		point.ptype = ptype
 	end
-	planetoids.cache[hash] = points 
+	--planetoids.cache[hash] = points 
 	return points
 end
 
@@ -675,6 +677,7 @@ local planets = {}
 
 minetest.register_on_generated(function(minp, maxp, seed)
 	local pr = PseudoRandom(seed)
+	local time_start = os.clock()
 
 	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
 	local area = VoxelArea:new{MinEdge=emin, MaxEdge=emax}
@@ -729,6 +732,7 @@ minetest.register_on_generated(function(minp, maxp, seed)
 		end
 		nixz = nixz + side_length
 	end
+	minetest.debug(os.clock() - time_start)
 	vm:set_data(data)
 	vm:set_lighting({day=15, night=0})
 	vm:calc_lighting()
