@@ -17,6 +17,7 @@ planetoids.settings = {
 	--The index is the number of points - these MUST be continuous
 	--The number value is the minimum random number required for that value
 	--to be chosen
+	mode = "perlin",
 	point_distribution = {
 		default = 1,
 		[1] = 60,

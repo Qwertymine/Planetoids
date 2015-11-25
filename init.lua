@@ -114,27 +114,18 @@ local find_node_perlin = function(pos,points,dist_func,perlin)
 	return air
 end
 
-local find_node = function(pos,points,dist_func,perlin)
+local find_node = function(pos,points,dist_func)
 	local dist = nil
 	local node = nil
-	local set = planetoids.settings
 	for i=1,#points do
 		local point = points[i]
 		dist = dist_func(pos,point.pos)
 		if dist >= point.radius then
 			return air
 		end
-		
-		local norm_dist = (dist*2)/point.radius - 1
-		local noise = perlin - norm_dist
-		if noise <= set.threshold then
-			return air
-		end
 
 		if point.ptype.crust_thickness then
-			local norm_crust = ((point.ptype.crust_thickness 
-				+ set.thickness_offset)*2)/point.radius
-			if noise - norm_crust > set.threshold then
+			if dist < point.radius - point.ptype.crust_thickness then
 				return point.ptype.filling_material
 			elseif point.ptype.crust_top_material 
 			and pos.y >= point.pos.y then
@@ -399,7 +390,6 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 	local points = {}
 	local block = byot or {}
 	local index = 1
-	local geo = planetoids.settings.geometry
 	local blockmax = {x=blockmin.x+(blocksize.x-1),y=blockmin.y+(blocksize.y -1)
 		,z=blockmin.z+(blocksize.z-1)}
 	local sector = pos_to_sector(blockcentre)
@@ -445,7 +435,7 @@ local generate_block = function(blocksize,blockcentre,blockmin,seed,source,byot)
 			block[i] = air
 			x = x + 1
 		end
-	elseif planetoids.perlin then
+	elseif planetoids.settings.mode == "perlin" then
 		local perlin_map = planetoids.perlin:get3dMap_flat(blockmin)
 		local tablesize = blocksize.x*blocksize.y*blocksize.z
 		local x,y,z = blockmin.x,blockmin.y,blockmin.z
@@ -495,7 +485,11 @@ end
 --this allows for distance testing to reduce the number of points to test
 local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
 	if not planetoids.perlin then
-		init_maps(minp,maxp)
+		if planetoids.settings.mode == "perlin" then
+			init_maps(minp,maxp)
+		else
+			planetoids.perlin = true
+		end
 	end
 	--normal block size
 	local blsize = planetoids.settings.blocksize or {x=5,y=5,z=5}
