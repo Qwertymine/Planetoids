@@ -214,7 +214,7 @@ local generate_decorated_points = function(sector,seed)
 		return planetoids.cache[hash]
 	end
 	--]]
-	local points,prand = generate_points(sector,seed,layer)
+	local points,prand = generate_points(sector,seed)
 	local planet_types = planetoids.settings.planet_types
 	for i=1,#points do
 		local point = points[i]
@@ -694,7 +694,7 @@ local c_tree   = minetest.get_content_id("default:tree")
 --Bring your own table for voronoi noise
 local planets = {}
 
-
+local map_seed
 
 
 minetest.register_on_generated(function(minp, maxp, seed)
