@@ -97,10 +97,9 @@ local find_node = function(pos,points,dist_func,perlin)
 		end
 
 		if point.ptype.crust_thickness then
-			local corrected_crust = point.ptype.crust_thickness 
-				+ set.thickness_offset
-			if noise - (corrected_crust*2)/point.radius 
-			> set.threshold then
+			local norm_crust = ((point.ptype.crust_thickness 
+				+ set.thickness_offset)*2)/point.radius
+			if noise - norm_crust > set.threshold then
 				return point.ptype.filling_material
 			elseif point.ptype.crust_top_material 
 			and pos.y >= point.pos.y then
