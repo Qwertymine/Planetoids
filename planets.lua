@@ -3,45 +3,43 @@ local p = planetoids.planets
 local coal = {
 	rarity = 30,
 	crust_material = "default:stone",
-	--thickness is MAXthickness - due to perlin noise variation
-	--it will be lower
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:stone_with_coal",
 }
 local lava = {
 	rarity = 20,
 	crust_material = "default:stone",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:lava_source",
 }
 local iron = {
 	rarity = 7,
 	crust_material = "default:stone",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:stone_with_iron",
 }
 local copper = {
 	rarity = 5,
 	crust_material = "default:stone",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:stone_with_copper",
 }
 local diamond = {
 	rarity = 2,
 	crust_material = "default:stone",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:stone_with_diamond",
 }
 local mese = {
 	rarity = 2,
 	crust_material = "default:stone",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:stone_with_mese",
 }
 local gravel = {
 	rarity = 2,
 	crust_material = "default:stone",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:gravel",
 }
 local mossy_cobble = {
@@ -60,21 +58,21 @@ p.stone = {
 local dirt = {
 	rarity = 12,
 	filling_material = "default:dirt",
-	crust_thickness = 2,
+	crust_thickness = 1,
 	crust_material = "default:dirt",
 	crust_top_material = "default:dirt_with_grass",
 }
 local dirt_dry = {
 	rarity = 4,
 	filling_material = "default:dirt",
-	crust_thickness = 2,
+	crust_thickness = 1,
 	crust_material = "default:dirt",
 	crust_top_material = "default:dirt_with_dry_grass",
 }
 local dirt_snow = {
 	rarity = 2,
 	filling_material = "default:dirt",
-	crust_thickness = 2,
+	crust_thickness = 1,
 	crust_material = "default:dirt",
 	crust_top_material = "default:dirt_with_snow",
 }
@@ -82,7 +80,7 @@ local dirt_snow = {
 local ice = {
 	rarity = 3,
 	filling_material = "default:ice",
-	crust_thickness = 4,
+	crust_thickness = 3,
 	crust_material = "default:snowblock",
 }
 
@@ -96,13 +94,13 @@ local sand_clay = {
 local sand_sandstone = {
 	rarity = 5,
 	filling_material = "default:sand",
-	crust_thickness = 2,
+	crust_thickness = 1,
 	crust_top_material = "default:sand",
 	crust_material = "default:sandstone",
 }
 local desert_sand = {
 	rarity = 5,
-	crust_thickness = 4,
+	crust_thickness = 3,
 	filling_material = "default:desert_sand",
 	crust_top_material = "default:desert_sand",
 	crust_material = "default:desert_stone",
@@ -117,25 +115,25 @@ p.soft = {
 local normal_tree = {
 	rarity = 1,
 	crust_material = "default:leaves",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:tree",
 }
 local pine_tree = {
 	rarity = 1,
 	crust_material = "default:pine_needles",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:pine_tree",
 }
 local acacia_tree = {
 	rarity = 1,
 	crust_material = "default:acacia_leaves",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:acacia_tree",
 }
 local jungle_tree = {
 	rarity = 1,
 	crust_material = "default:jungleleaves",
-	crust_thickness = 3,
+	crust_thickness = 2,
 	filling_material = "default:jungletree",
 }
 
@@ -146,14 +144,14 @@ p.tree = {
 
 local water = {
 	rarity = 1,
-	crust_thickness = 3,
+	crust_thickness = 2,
 	crust_material = "default:glass",
 	filling_material = "default:water_source",
 }
 
 local river_water = {
 	rarity = 1,
-	crust_thickness = 3,
+	crust_thickness = 2,
 	crust_material = "default:glass",
 	filling_material = "default:river_water_source",
 }

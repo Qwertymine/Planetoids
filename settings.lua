@@ -53,6 +53,9 @@ planetoids.settings = {
 		spread = {x=10,y=10,z=10},
 	},
 	threshold = 0,
+	--crust thickness is made thinner by randomness of perlin noise  -this
+	--setting is added to all crust thicknesses in calculations
+	thickness_offset = 1,
 }
 
 planetoids.configure()
