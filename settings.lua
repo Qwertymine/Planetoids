@@ -26,10 +26,10 @@ planetoids.settings = {
 		[4] = 40,
 	},
 	planet_size = {
-		minimum = 15,
-		maximum = 30,
+		minimum = 5,
+		maximum = 15,
 		--size of sector as multiple of maximum, must be > 2
-		sector_scale = 2,
+		sector_scale = 3,
 	},
 	planet_types = {
 		planets.stone,planets.soft,planets.tree,planets.glass,
@@ -44,7 +44,17 @@ planetoids.settings = {
 	--how distance from the centre of a biome is judged
 	--changes he shape of generated biomes
 	geometry = "euclidean",
-	perlin_map = {
+}
+
+--perlin specific settings
+if planetoids.settings.mode == "perlin" then
+	planetoids.settings.planet_size = {
+		minimum = 15,
+		maximum = 30,
+		--size of sector as multiple of maximum, must be > 2
+		sector_scale = 2,
+	}
+	planetoids.settings.perlin_map = {
 		lacunarity = 1.4,
 		octaves = 2,
 		persistence = 0.5,
@@ -52,11 +62,10 @@ planetoids.settings = {
 		scale = 0.6,
 		seeddiff = 5349,
 		spread = {x=10,y=10,z=10},
-	},
-	threshold = 0,
-	--crust thickness is made thinner by randomness of perlin noise  -this
-	--setting is added to all crust thicknesses in calculations
-	thickness_offset = 1,
-}
+	}
+	planetoids.settings.threshold = 0,
+	planetoids.settings.thickness_offset = 1,
+end
+
 
 planetoids.configure()
