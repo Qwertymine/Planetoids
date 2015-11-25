@@ -63,8 +63,8 @@ if planetoids.settings.mode == "perlin" then
 		seeddiff = 5349,
 		spread = {x=10,y=10,z=10},
 	}
-	planetoids.settings.threshold = 0,
-	planetoids.settings.thickness_offset = 1,
+	planetoids.settings.threshold = 0
+	planetoids.settings.thickness_offset = 1
 end
 
 
