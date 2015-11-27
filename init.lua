@@ -8,35 +8,23 @@ planetoids.layers = {}
 --		2 or 3
 --	block_size
 --		vector - norm 5^3 or nil
---	sector_lengths
---		vector - norm 300^3 or 2000^3
 --	scale
 --		integer - the sector lengths are multiplied by this, but the
 --			noise produced has a lower resolution
---	biome_types
---		table of strings- random,multi-map,multi-tolerance-map,default-biome
---	biome_type_options
---		table - tolerances for heatmap
 --	geometry
 --		string - euclidean,manhattan,chebyshev
 --
 --Layer in mem
 --	cache
 --		table of tables
---	add_biome
---		function to add biomes to the layer
 --
 --
 --Point in mem
 --	pos
 --		vector
---	biome
---		biome def table
 
 
 
---Returns the biome of the closest point from a table
---Must ensure that points cover the Moore environment of the sector
 
 --[[
 --TODO list
@@ -222,11 +210,11 @@ local generate_points = function(sector,seed)
 		num = num - 1
 	end
 	--The random number generator is returned for use in adding other 
-	--properties to the points - biomes
+	--properties to the points
 	return points , prand
 end
 
---This is a wrapper around generate_points - this adds biomes and doesn't return the random
+--This is a wrapper around generate_points - this adds the planet type and doesn't return the random
 --number generator
 local generate_decorated_points = function(sector,seed)
 	local hash = hash_pos(sector)
@@ -480,7 +468,7 @@ end
 
 --map is generated in blocks
 --this allows for distance testing to reduce the number of points to test
-local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
+local get_planet_map = function(minp,maxp,seed,byot)
 	if not planetoids.perlin then
 		if planetoids.settings.mode == "perlin" then
 			init_maps(minp,maxp)
@@ -538,7 +526,7 @@ local get_biome_map_3d_experimental = function(minp,maxp,seed,byot)
 	return map
 end
 
-planetoids.experimental_3d = get_biome_map_3d_experimental
+planetoids.raw_map = get_planet_map
 
 --This function can be used to scale any compliant 3d map generator
 --This adds an extra overhead - but this is negligable
@@ -613,17 +601,14 @@ end
 
 local shared_scale_byot = {}
 
---This is a single function which can be called to produce a biomemap
---for any layer type
---Attempts to choose the most optimal type for a given layer
---All scale code is condtional, so is safe to add to any mapgen
+--Wrapper to apply scale function if needed
 planetoids.get_map_flat = function(minp,maxp,seed,byot)
 	local scale_byot = nil
 	if byot then
 		scale_byot = shared_scale_byot
 	end
 
-	local map_gen = get_biome_map_3d_experimental
+	local map_gen = get_planet_map
 
 	return scale_3d_map_flat(minp,maxp,seed,map_gen,byot,scale_byot)
 end
@@ -633,16 +618,6 @@ planetoids.configure = function()
 
 	--Default seed offset, to avoid errors layer where it is required
 	set.seed_offset = set.seed_offset or 0
-
-	--Number indexed table of biome names
-	set.biomes = {}
-	--Key indexed table of biomes - indexed by biome.name
-	set.biome_settings ={}
-	set.biome_number = 0
-	--Layer object member functions
-	set.get_biome_list = function(self,to_get)
-		return self.biomes
-	end
 
 	--setup random functions
 	local sum = 0
@@ -705,13 +680,6 @@ planetoids.configure = function()
 	--setup geometry function
 	set.dist = planetoids.geometry[set.geometry]
 	set.get_dist = set.dist._3d
-
-	--variable to track wether the noise maps have been initialised
-	if set.biome_maps then
-		set.maps_init = false
-	else
-		set.maps_init = true
-	end
 
 	--setup layer cache to chache generated points
 	set.cache = setmetatable({},planetoids.meta_cache)
