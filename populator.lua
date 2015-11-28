@@ -2,7 +2,10 @@ planetoids.populator = {}
 local p = planetoids.populator
 --basic populator tables
 local red_flower = {
+	--The node to be placed
 	node = "flowers:rose",
+	--The relative frequency of this node being placed compared to other
+	--nodes populating this node
 	rarity = 1,
 }
 local blue_flower = {
@@ -31,8 +34,11 @@ local long_grass = {
 }
 
 p.grass_pop = {
+	--Node that is populated
 	node = "default:dirt_with_grass",
+	--Chance of each node being populated
 	population_chance = 0.5,
+	--List of nodes which can populate this node
 	red_flower,blue_flower,yellow_flower,white_flower,
 	purple_flower,orange_flower,long_grass,
 }

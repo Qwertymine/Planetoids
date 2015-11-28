@@ -1,9 +1,19 @@
 planetoids.planets = {}
 local p = planetoids.planets
 local coal = {
+	--Relative frequency to other planets of this group
 	rarity = 30,
+	--The material of the outer crust of the planet
+	--If there is a crust_top_material - this is the material of the bottom
+	--Only required of there is a crust_top_material set
 	crust_material = "default:stone",
+	--The material of the top of the outer crust of the planet
+	--Not required
+	crust_top_material = nil,
+	--The thickness of the crust - this doesn't add to planet size
 	crust_thickness = 2,
+	--The material in the centre of the planet
+	--If no crust - this is the only material of the planet
 	filling_material = "default:stone_with_coal",
 }
 local lava = {
@@ -50,7 +60,9 @@ local mossy_cobble = {
 }
 
 p.stone = {
+	--Relative frequency compared to other planet groups
 	rarity = 10,
+	--Planet definitions included in this type
 	coal,lava,iron,copper,diamond,mese,gravel,
 	mossy_cobble,
 }
