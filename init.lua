@@ -825,3 +825,11 @@ minetest.register_on_generated(function(minp, maxp, seed)
 	vm:calc_lighting()
 	vm:write_to_map(data)
 end)
+
+minetest.register_on_mapgen_init(function(mgparams)
+	mgparams.mgname = "singlenode"
+	-- Avoid changing the mapgen seed
+	mgparams.seed = nil
+	mgparams.flags = mgparams.flags .. " , nolight "
+	minetest.set_mapgen_params(mgparams)
+end)
